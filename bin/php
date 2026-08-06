@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Project-local PHP 8.2 — does NOT change global `php` (still XAMPP 7.4).
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export PHPRC="$ROOT/.php"
+exec /Applications/XAMPP/xamppfiles/bin/php-8.2.4 "$@"

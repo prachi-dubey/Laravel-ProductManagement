@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Always run artisan with XAMPP PHP 8.2 (global php stays 7.4).
+DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$DIR/.." && pwd)"
+export PHPRC="$ROOT/.php"
+export PATH="$DIR:$PATH"
+cd "$ROOT"
+exec php artisan "$@"
