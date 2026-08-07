@@ -31,8 +31,15 @@ Open **XAMPP Manager** → start **MySQL**. DB `shop_api` should already exist; 
 
 **Notes demo (browser):** http://127.0.0.1:8000/notes
 
-**API (Postman):** import [`postman/shop-api-categories-products.postman_collection.json`](postman/shop-api-categories-products.postman_collection.json)  
-Always send header `Accept: application/json`. Base URL: `http://127.0.0.1:8000`
+**API (Postman):** import [`postman/shop-api-categories-products.postman_collection.json`](postman/shop-api-categories-products.postman_collection.json)
+
+1. Run `Login (admin)` or `Login (customer)` — token is saved to collection var `token`
+2. Send `Authorization: Bearer {{token}}` + `Accept: application/json`
+3. Writes (POST/PUT/DELETE catalog) require **admin**
+
+Seeded users: `admin@shop.test` / `customer@shop.test` — password `password`
+
+**Browser (Breeze session):** http://127.0.0.1:8000/login → Notes at `/notes`
 
 ---
 

@@ -16,6 +16,8 @@ class CategoryController extends Controller
      */
     public function index(): JsonResponse
     {
+        $this->authorize('viewAny', Category::class);
+
         $categories = Category::query()
             ->withCount('products')
             ->latest()
@@ -33,6 +35,8 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
+        $this->authorize('create', Category::class);
+
         $data = $request->validated();
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
         $data['is_active'] = $data['is_active'] ?? true;
@@ -48,10 +52,11 @@ class CategoryController extends Controller
 
     /**
      * GET /api/categories/{category}
-     * Includes related products (1:N).
      */
     public function show(Category $category): JsonResponse
     {
+        $this->authorize('view', $category);
+
         $category->load(['products.tags']);
 
         return response()->json([
@@ -66,6 +71,8 @@ class CategoryController extends Controller
      */
     public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
+        $this->authorize('update', $category);
+
         $data = $request->validated();
 
         if (array_key_exists('name', $data) && empty($data['slug'])) {
@@ -86,6 +93,8 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): JsonResponse
     {
+        $this->authorize('delete', $category);
+
         if ($category->products()->exists()) {
             return response()->json([
                 'success' => false,

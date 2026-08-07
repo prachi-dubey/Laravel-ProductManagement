@@ -14,10 +14,11 @@ class ProductController extends Controller
 {
     /**
      * GET /api/products
-     * Eager-loads category (1:N inverse) and tags (M:N).
      */
     public function index(): JsonResponse
     {
+        $this->authorize('viewAny', Product::class);
+
         $products = Product::query()
             ->with(['category', 'tags'])
             ->latest()
@@ -35,6 +36,8 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request): JsonResponse
     {
+        $this->authorize('create', Product::class);
+
         $data = $request->validated();
         $tagIds = $data['tag_ids'] ?? [];
         unset($data['tag_ids']);
@@ -60,6 +63,8 @@ class ProductController extends Controller
      */
     public function show(Product $product): JsonResponse
     {
+        $this->authorize('view', $product);
+
         $product->load(['category', 'tags']);
 
         return response()->json([
@@ -74,6 +79,8 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
+        $this->authorize('update', $product);
+
         $data = $request->validated();
         $tagIds = $data['tag_ids'] ?? null;
         unset($data['tag_ids']);
@@ -100,6 +107,8 @@ class ProductController extends Controller
      */
     public function destroy(Product $product): JsonResponse
     {
+        $this->authorize('delete', $product);
+
         if ($product->orderItems()->exists()) {
             return response()->json([
                 'success' => false,
@@ -119,10 +128,11 @@ class ProductController extends Controller
 
     /**
      * PUT /api/products/{product}/tags
-     * Replace the product's tags (M:N sync).
      */
     public function syncTags(Request $request, Product $product): JsonResponse
     {
+        $this->authorize('update', $product);
+
         $validated = $request->validate([
             'tag_ids' => ['required', 'array'],
             'tag_ids.*' => ['integer', 'exists:tags,id'],
