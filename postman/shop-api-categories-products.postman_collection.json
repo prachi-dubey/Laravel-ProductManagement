@@ -1,0 +1,147 @@
+{
+  "info": {
+    "name": "Shop API — Categories & Products",
+    "description": "Phase 1 Postman CRUD (no auth yet). Set collection variable base_url=http://127.0.0.1:8000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "category_id", "value": "1" },
+    { "key": "product_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/categories"
+          }
+        },
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Gadgets\",\n  \"description\": \"Demo category from Postman\",\n  \"is_active\": true\n}"
+            },
+            "url": "{{base_url}}/api/categories"
+          }
+        },
+        {
+          "name": "Show category",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/categories/{{category_id}}"
+          }
+        },
+        {
+          "name": "Update category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Gadgets Updated\",\n  \"is_active\": true\n}"
+            },
+            "url": "{{base_url}}/api/categories/{{category_id}}"
+          }
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/categories/{{category_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/products"
+          }
+        },
+        {
+          "name": "Create product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Demo Mouse\",\n  \"sku\": \"MSE-DEMO-01\",\n  \"description\": \"Created via Postman\",\n  \"price\": 799.00,\n  \"stock\": 25,\n  \"is_active\": true,\n  \"tag_ids\": [1, 2]\n}"
+            },
+            "url": "{{base_url}}/api/products"
+          }
+        },
+        {
+          "name": "Show product",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/products/{{product_id}}"
+          }
+        },
+        {
+          "name": "Update product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 749.00,\n  \"stock\": 30,\n  \"tag_ids\": [1]\n}"
+            },
+            "url": "{{base_url}}/api/products/{{product_id}}"
+          }
+        },
+        {
+          "name": "Sync product tags",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tag_ids\": [1, 3]\n}"
+            },
+            "url": "{{base_url}}/api/products/{{product_id}}/tags"
+          }
+        },
+        {
+          "name": "Delete product",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/api/products/{{product_id}}"
+          }
+        }
+      ]
+    }
+  ]
+}

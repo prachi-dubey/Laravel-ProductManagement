@@ -31,6 +31,9 @@ Open **XAMPP Manager** → start **MySQL**. DB `shop_api` should already exist; 
 
 **Notes demo (browser):** http://127.0.0.1:8000/notes
 
+**API (Postman):** import [`postman/shop-api-categories-products.postman_collection.json`](postman/shop-api-categories-products.postman_collection.json)  
+Always send header `Accept: application/json`. Base URL: `http://127.0.0.1:8000`
+
 ---
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
