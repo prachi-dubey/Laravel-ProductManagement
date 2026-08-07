@@ -37,7 +37,8 @@ class NoteController extends Controller
     public function store(StoreNoteRequest $request): RedirectResponse
     {
         Note::query()->create($request->validated());
-
+// Only the fields defined in your validation rules are returned.
+// For create() to work, your model must allow mass assignment.
         return redirect()
             ->route('notes.index')
             ->with('success', 'Note created successfully.');
@@ -62,6 +63,7 @@ class NoteController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    // Route Model Binding.
     public function update(UpdateNoteRequest $request, Note $note): RedirectResponse
     {
         $note->update($request->validated());
