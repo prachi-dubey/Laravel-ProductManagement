@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\IndexProductRequest;
 use App\Http\Requests\Api\StoreProductRequest;
 use App\Http\Requests\Api\UpdateProductRequest;
+use App\Http\Resources\Api\ProductResource;
 use App\Models\Product;
+use App\Support\ApiListQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,21 +17,62 @@ class ProductController extends Controller
 {
     /**
      * GET /api/products
+     *
+     * Query: page, per_page, sort, search, category_id, tag_id, is_active, min_price, max_price
+     * Sort examples: price | -price | name | -created_at
      */
-    public function index(): JsonResponse
+    public function index(IndexProductRequest $request): JsonResponse
     {
         $this->authorize('viewAny', Product::class);
 
-        $products = Product::query()
-            ->with(['category', 'tags'])
-            ->latest()
-            ->get();
+        $query = Product::query()->with(['category', 'tags']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Products retrieved successfully.',
-            'data' => $products,
-        ]);
+        if ($search = $request->query('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->query('category_id'));
+        }
+
+        if ($request->filled('tag_id')) {
+            $tagId = $request->query('tag_id');
+            $query->whereHas('tags', function ($q) use ($tagId) {
+                $q->where('tags.id', $tagId);
+            });
+        }
+
+        if ($request->has('is_active') && $request->query('is_active') !== null) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->query('min_price'));
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->query('max_price'));
+        }
+
+        ApiListQuery::applySort(
+            $query,
+            $request,
+            ['id', 'name', 'price', 'stock', 'created_at', 'updated_at'],
+            '-created_at'
+        );
+
+        $perPage = ApiListQuery::perPage($request)['per_page'];
+        $paginator = $query->paginate($perPage)->appends($request->query());
+
+        return response()->json(
+            ApiListQuery::paginatedResponse(
+                ProductResource::collection($paginator),
+                'Products retrieved successfully.'
+            )
+        );
     }
 
     /**
@@ -54,7 +98,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Product created successfully.',
-            'data' => $product->load(['category', 'tags']),
+            'data' => new ProductResource($product->load(['category', 'tags'])),
         ], 201);
     }
 
@@ -70,7 +114,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Product retrieved successfully.',
-            'data' => $product,
+            'data' => new ProductResource($product),
         ]);
     }
 
@@ -98,7 +142,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Product updated successfully.',
-            'data' => $product->fresh()->load(['category', 'tags']),
+            'data' => new ProductResource($product->fresh()->load(['category', 'tags'])),
         ]);
     }
 
@@ -143,7 +187,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Product tags synced successfully.',
-            'data' => $product->fresh()->load(['category', 'tags']),
+            'data' => new ProductResource($product->fresh()->load(['category', 'tags'])),
         ]);
     }
 }

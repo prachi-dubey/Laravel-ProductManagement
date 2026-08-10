@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\IndexCategoryRequest;
 use App\Http\Requests\Api\StoreCategoryRequest;
 use App\Http\Requests\Api\UpdateCategoryRequest;
+use App\Http\Resources\Api\CategoryResource;
 use App\Models\Category;
+use App\Support\ApiListQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
@@ -13,21 +16,42 @@ class CategoryController extends Controller
 {
     /**
      * GET /api/categories
+     *
+     * Query: page, per_page, sort, search, is_active
      */
-    public function index(): JsonResponse
+    public function index(IndexCategoryRequest $request): JsonResponse
     {
         $this->authorize('viewAny', Category::class);
 
-        $categories = Category::query()
-            ->withCount('products')
-            ->latest()
-            ->get();
+        $query = Category::query()->withCount('products');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Categories retrieved successfully.',
-            'data' => $categories,
-        ]);
+        if ($search = $request->query('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->has('is_active') && $request->query('is_active') !== null) {
+            $query->where('is_active', $request->boolean('is_active'));
+        }
+
+        ApiListQuery::applySort(
+            $query,
+            $request,
+            ['id', 'name', 'created_at', 'updated_at'],
+            '-created_at'
+        );
+
+        $perPage = ApiListQuery::perPage($request)['per_page'];
+        $paginator = $query->paginate($perPage)->appends($request->query());
+
+        return response()->json(
+            ApiListQuery::paginatedResponse(
+                CategoryResource::collection($paginator),
+                'Categories retrieved successfully.'
+            )
+        );
     }
 
     /**
@@ -46,7 +70,7 @@ class CategoryController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Category created successfully.',
-            'data' => $category,
+            'data' => new CategoryResource($category->loadCount('products')),
         ], 201);
     }
 
@@ -57,12 +81,12 @@ class CategoryController extends Controller
     {
         $this->authorize('view', $category);
 
-        $category->load(['products.tags']);
+        $category->load(['products.tags'])->loadCount('products');
 
         return response()->json([
             'success' => true,
             'message' => 'Category retrieved successfully.',
-            'data' => $category,
+            'data' => new CategoryResource($category),
         ]);
     }
 
@@ -84,7 +108,7 @@ class CategoryController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Category updated successfully.',
-            'data' => $category->fresh()->loadCount('products'),
+            'data' => new CategoryResource($category->fresh()->loadCount('products')),
         ]);
     }
 
