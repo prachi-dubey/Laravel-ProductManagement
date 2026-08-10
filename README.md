@@ -49,6 +49,32 @@ Open **XAMPP Manager** → start **MySQL**. DB `shop_api` should already exist; 
 
 Seeded users: `admin@shop.test` / `customer@shop.test` — password `password`
 
+**Orders (Service layer):** login as **customer**, then:
+
+```http
+POST /api/orders
+Authorization: Bearer {{token}}
+{
+  "address_id": 1,
+  "items": [
+    { "product_id": 1, "quantity": 1 },
+    { "product_id": 2, "quantity": 2 }
+  ]
+}
+```
+
+Business rules (stock lock, snapshots, totals, DB transaction) live in `App\Services\OrderService` — not the controller.
+
+**Architecture (layers):**
+
+```
+Controller → Service → Repository (interface) → Eloquent
+```
+
+- Interfaces: `app/Repositories/Contracts/*`
+- Eloquent impl: `app/Repositories/Eloquent/*`
+- Bound in `AppServiceProvider` (swap/mock without changing services)
+
 **Browser (Breeze session):** http://127.0.0.1:8000/login → Notes at `/notes`
 
 ---

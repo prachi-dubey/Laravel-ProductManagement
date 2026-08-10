@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\OrderRepositoryInterface;
+use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Repositories\Eloquent\OrderRepository;
+use App\Repositories\Eloquent\ProductRepository;
 use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\ServiceProvider;
 
@@ -12,7 +16,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Bind interfaces → Eloquent implementations (easy to swap / mock in tests)
+        $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
+        $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
     }
 
     /**

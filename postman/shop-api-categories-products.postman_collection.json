@@ -8,7 +8,9 @@
     { "key": "base_url", "value": "http://127.0.0.1:8000" },
     { "key": "token", "value": "" },
     { "key": "category_id", "value": "1" },
-    { "key": "product_id", "value": "1" }
+    { "key": "product_id", "value": "1" },
+    { "key": "order_id", "value": "1" },
+    { "key": "address_id", "value": "1" }
   ],
   "item": [
     {
@@ -305,6 +307,63 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": "{{base_url}}/api/products/{{product_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders (via OrderService)",
+      "item": [
+        {
+          "name": "Place order (customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('order_id', String(json.data.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address_id\": {{address_id}},\n  \"items\": [\n    { \"product_id\": 1, \"quantity\": 1 },\n    { \"product_id\": 2, \"quantity\": 2 }\n  ]\n}"
+            },
+            "url": "{{base_url}}/api/orders",
+            "description": "Uses OrderService: transaction, stock lock, line snapshots, totals. Login as customer@shop.test first (seeded address_id=1)."
+          }
+        },
+        {
+          "name": "List orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/api/orders?page=1&per_page=10"
+          }
+        },
+        {
+          "name": "Show order",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/api/orders/{{order_id}}"
           }
         }
       ]
