@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\InsufficientStockException;
 use App\Exceptions\InvalidAddressException;
 use App\Exceptions\ProductUnavailableException;
+use App\Events\OrderPlaced;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -57,7 +58,7 @@ class OrderService
             throw new InvalidAddressException();
         }
 
-        return DB::transaction(function () use ($user, $address, $data) {
+        $order = DB::transaction(function () use ($user, $address, $data) {
             $lines = [];
             $subtotal = 0;
 
@@ -115,6 +116,11 @@ class OrderService
 
             return $this->orders->loadRelations($order, ['items.product', 'address', 'user']);
         });
+
+        // After commit: event → listeners → queued jobs → notifications
+        OrderPlaced::dispatch($order);
+
+        return $order;
     }
 
     private function generateNumber(): string

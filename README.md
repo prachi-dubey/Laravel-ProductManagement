@@ -98,6 +98,31 @@ Controller → Service → Repository (interface) → Eloquent
 
 Handlers live in `bootstrap/app.php` → `App\Support\ApiErrorResponse`. Domain exceptions under `app/Exceptions/`.
 
+**Async (Events → Jobs → Notifications):** placing an order fires `OrderPlaced`:
+
+```
+OrderService::place
+  → OrderPlaced event
+    → SendOrderConfirmation listener → SendOrderConfirmationJob
+    → QueueLowStockCheck listener → CheckLowStockJob
+```
+
+- Confirmation: mail (`MAIL_MAILER=log` → `storage/logs/laravel.log`) + row in `notifications`
+- Low stock (≤ 10): database notification to **admin** users
+
+```bash
+./bin/artisan migrate                 # notifications table
+# .env: QUEUE_CONNECTION=database
+
+# Terminal A — API
+./bin/serve
+
+# Terminal B — worker
+./bin/artisan queue:work
+```
+
+Then Postman: Place order → `GET /api/notifications` (customer + admin tokens).
+
 **Browser (Breeze session):** http://127.0.0.1:8000/login → Notes at `/notes`
 
 ---

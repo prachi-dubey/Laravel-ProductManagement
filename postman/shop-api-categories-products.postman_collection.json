@@ -367,6 +367,34 @@
           }
         }
       ]
+    },
+    {
+      "name": "Notifications (async)",
+      "item": [
+        {
+          "name": "List my notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/api/notifications",
+            "description": "After Place order, run `./bin/artisan queue:work --once` (or leave worker running). Customer sees order_placed; admin sees low_stock when stock ≤ 10."
+          }
+        },
+        {
+          "name": "Mark all notifications read",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/api/notifications/read-all"
+          }
+        }
+      ]
     }
   ]
 }
