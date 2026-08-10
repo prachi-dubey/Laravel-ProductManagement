@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\IndexProductRequest;
 use App\Http\Requests\Api\StoreProductRequest;
 use App\Http\Requests\Api\UpdateProductRequest;
+use App\Http\Requests\Api\UploadProductImageRequest;
 use App\Http\Resources\Api\ProductResource;
 use App\Models\Product;
 use App\Support\ApiListQuery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -160,6 +162,7 @@ class ProductController extends Controller
             ], 422);
         }
 
+        $this->deleteStoredImage($product->image_path);
         $product->tags()->detach();
         $product->delete();
 
@@ -167,6 +170,56 @@ class ProductController extends Controller
             'success' => true,
             'message' => 'Product deleted successfully.',
             'data' => null,
+        ]);
+    }
+
+    /**
+     * POST /api/products/{product}/image
+     * multipart/form-data field: image
+     */
+    public function uploadImage(UploadProductImageRequest $request, Product $product): JsonResponse
+    {
+        $this->authorize('update', $product);
+
+        $path = $request->file('image')->store('products', 'public');
+
+        $this->deleteStoredImage($product->image_path);
+
+        $product->update([
+            'image_path' => $path,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product image uploaded successfully.',
+            'data' => new ProductResource($product->fresh()->load(['category', 'tags'])),
+        ]);
+    }
+
+    /**
+     * DELETE /api/products/{product}/image
+     */
+    public function deleteImage(Product $product): JsonResponse
+    {
+        $this->authorize('update', $product);
+
+        if (! $product->image_path) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product has no image to delete.',
+            ], 422);
+        }
+
+        $this->deleteStoredImage($product->image_path);
+
+        $product->update([
+            'image_path' => null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product image deleted successfully.',
+            'data' => new ProductResource($product->fresh()->load(['category', 'tags'])),
         ]);
     }
 
@@ -189,5 +242,16 @@ class ProductController extends Controller
             'message' => 'Product tags synced successfully.',
             'data' => new ProductResource($product->fresh()->load(['category', 'tags'])),
         ]);
+    }
+
+    private function deleteStoredImage($path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

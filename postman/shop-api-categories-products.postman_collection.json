@@ -263,6 +263,40 @@
           }
         },
         {
+          "name": "Upload product image (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "description": "jpg/jpeg/png/webp, max 2MB. Do not set Content-Type manually — Postman sets multipart boundary.",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/products/{{product_id}}/image",
+            "description": "multipart/form-data field name must be `image`. Response includes image_path + image_url (needs `php artisan storage:link`)."
+          }
+        },
+        {
+          "name": "Delete product image (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/api/products/{{product_id}}/image"
+          }
+        },
+        {
           "name": "Delete product (admin)",
           "request": {
             "method": "DELETE",

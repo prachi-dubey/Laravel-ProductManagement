@@ -37,6 +37,16 @@ Open **XAMPP Manager** → start **MySQL**. DB `shop_api` should already exist; 
 2. Send `Authorization: Bearer {{token}}` + `Accept: application/json`
 3. Writes (POST/PUT/DELETE catalog) require **admin**
 
+**Product images:** once after clone, link public storage (already done if you followed along):
+
+```bash
+./bin/artisan storage:link
+```
+
+- `POST /api/products/{id}/image` — admin, `multipart/form-data` field **`image`** (jpg/jpeg/png/webp, max 2MB)
+- `DELETE /api/products/{id}/image` — admin
+- Product JSON includes `image_path` + `image_url` (served from `/storage/...`)
+
 Seeded users: `admin@shop.test` / `customer@shop.test` — password `password`
 
 **Browser (Breeze session):** http://127.0.0.1:8000/login → Notes at `/notes`
