@@ -18,11 +18,12 @@ class EnsureUserIsAdmin
         $user = $request->user();
 
         if (! $user || ! $user->isAdmin()) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Admin access required.',
-                ], 403);
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return \App\Support\ApiErrorResponse::make(
+                    'Admin access required.',
+                    403,
+                    'FORBIDDEN'
+                );
             }
 
             abort(403, 'Admin access required.');

@@ -1,8 +1,10 @@
 <?php
 
+use App\Support\ApiErrorResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 /*
 | Positional args (not named) so PHP 7.4 IDE parsers don't choke.
@@ -26,5 +28,11 @@ return Application::configure(dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->shouldRenderJsonWhen(function (Request $request, $e) {
+            return $request->is('api/*') || $request->expectsJson();
+        });
+
+        $exceptions->render(function ($e, Request $request) {
+            return ApiErrorResponse::fromThrowable($e, $request);
+        });
     })->create();

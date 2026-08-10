@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InvalidAddressException;
+use App\Exceptions\ProductUnavailableException;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -9,7 +12,6 @@ use App\Repositories\Contracts\OrderRepositoryInterface;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Order rules — data access via OrderRepository + ProductRepository.
@@ -52,9 +54,7 @@ class OrderService
         );
 
         if (! $address) {
-            throw ValidationException::withMessages([
-                'address_id' => 'Address not found for this user.',
-            ]);
+            throw new InvalidAddressException();
         }
 
         return DB::transaction(function () use ($user, $address, $data) {
@@ -65,17 +65,13 @@ class OrderService
                 $product = $this->products->findForUpdate((int) $row['product_id']);
 
                 if (! $product || ! $product->is_active) {
-                    throw ValidationException::withMessages([
-                        'items' => 'One or more products are unavailable.',
-                    ]);
+                    throw new ProductUnavailableException();
                 }
 
                 $qty = (int) $row['quantity'];
 
                 if ($product->stock < $qty) {
-                    throw ValidationException::withMessages([
-                        'items' => "Insufficient stock for {$product->name} (available: {$product->stock}).",
-                    ]);
+                    throw new InsufficientStockException($product->name, $product->stock);
                 }
 
                 $unitPrice = (float) $product->price;

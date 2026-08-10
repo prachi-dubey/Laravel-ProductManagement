@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use App\Exceptions\ProductImageMissingException;
+use App\Exceptions\ProductInUseException;
 use App\Models\Product;
 use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Business logic for products — persistence goes through ProductRepository.
@@ -75,9 +76,7 @@ class ProductService
     public function delete(Product $product): void
     {
         if ($this->products->hasOrderItems($product)) {
-            throw ValidationException::withMessages([
-                'product' => 'Cannot delete product that appears on existing orders.',
-            ]);
+            throw new ProductInUseException();
         }
 
         $this->deleteStoredImage($product->image_path);
@@ -100,9 +99,7 @@ class ProductService
     public function deleteImage(Product $product): Product
     {
         if (! $product->image_path) {
-            throw ValidationException::withMessages([
-                'image' => 'Product has no image to delete.',
-            ]);
+            throw new ProductImageMissingException();
         }
 
         $this->deleteStoredImage($product->image_path);

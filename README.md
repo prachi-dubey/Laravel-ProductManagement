@@ -75,6 +75,29 @@ Controller → Service → Repository (interface) → Eloquent
 - Eloquent impl: `app/Repositories/Eloquent/*`
 - Bound in `AppServiceProvider` (swap/mock without changing services)
 
+**API errors (consistent envelope):**
+
+```json
+{
+  "success": false,
+  "message": "Insufficient stock for Wireless Headphones (available: 2).",
+  "error_code": "INSUFFICIENT_STOCK",
+  "errors": { "items": ["..."] }
+}
+```
+
+| `error_code` | When |
+|--------------|------|
+| `VALIDATION_ERROR` | FormRequest / validate() |
+| `UNAUTHENTICATED` | missing/invalid token |
+| `FORBIDDEN` | policy / admin middleware |
+| `NOT_FOUND` | missing model |
+| `INSUFFICIENT_STOCK` / `PRODUCT_UNAVAILABLE` / `INVALID_ADDRESS` | OrderService |
+| `PRODUCT_IN_USE` / `PRODUCT_IMAGE_MISSING` | ProductService |
+| `SERVER_ERROR` | unexpected |
+
+Handlers live in `bootstrap/app.php` → `App\Support\ApiErrorResponse`. Domain exceptions under `app/Exceptions/`.
+
 **Browser (Breeze session):** http://127.0.0.1:8000/login → Notes at `/notes`
 
 ---
