@@ -1,188 +1,60 @@
 # Shop API (Laravel 12)
 
-E-commerce Order Management API (Postman) + small Blade Notes demo.
+Postman-only e-commerce API — no Blade UI. Auth via Sanctum Bearer tokens.
+
+**Product ↔ Category** is many-to-many via the `category_product` pivot table (a product can appear in multiple categories).
+
+## Folder layout (by domain)
+
+```
+app/Events/Order/OrderPlaced.php
+app/Http/Requests/Api/{Auth,Category,Product,Order}/
+app/Http/Resources/Api/{Auth,Category,Product,Order}/
+app/Interfaces/{Auth,Category,Product,Order}/
+```
+
+Store + update share one request where rules overlap (`SaveCategoryRequest`, `SaveProductRequest`).
+
+## Architecture
+
+```
+Controller → Service → Interface → Repository → Model
+```
+
+- Messages: `lang/en/messages.php`
+- Success envelope: base `Controller` methods `success()` / `paginated()`
+- Errors: `App\Helper\ApiErrorResponse` + single `App\Exceptions\ApiException` (static helpers per error)
+- List helpers: `App\Helper\ApiListHelper` (sort, per_page, paginated payload)
 
 ## Local PHP setup (XAMPP dual version)
 
-Global `php` stays **7.4** for other projects. This app uses XAMPP’s **php-8.2.4**.
-
 ```bash
 cd shop-api
-
-# IMPORTANT: do NOT run plain `php artisan …` (that is XAMPP PHP 7.4).
-# Use these wrappers instead:
 ./bin/artisan migrate
-./bin/serve                 # http://127.0.0.1:8000  → Notes demo
-
-# Or activate PHP 8.2 in the current shell, then use normal commands:
-source bin/use-php82.sh
-php -v                      # must show 8.2.4
-php artisan route:list
+./bin/serve                 # http://127.0.0.1:8000
 ```
 
-Open **XAMPP Manager** → start **MySQL**. DB `shop_api` should already exist; if not:
+Open **XAMPP Manager** → start **MySQL**.
 
-```bash
-/Applications/XAMPP/xamppfiles/bin/mysql -u root -e "CREATE DATABASE IF NOT EXISTS shop_api CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-./bin/artisan migrate
-```
+## Postman
 
-`.env` uses MySQL `shop_api` / user `root`. Session/cache use `file` for now.
+Import [`postman/shop-api-categories-products.postman_collection.json`](postman/shop-api-categories-products.postman_collection.json)
 
-**Notes demo (browser):** http://127.0.0.1:8000/notes
+**Public (no Bearer token):**
+- `GET /api/categories`, `GET /api/categories/{id}`
+- `GET /api/products`, `GET /api/products/{id}`
+- `POST /api/register`, `POST /api/login`
 
-**API (Postman):** import [`postman/shop-api-categories-products.postman_collection.json`](postman/shop-api-categories-products.postman_collection.json)
+**Authenticated (Bearer token required):**
+- `GET /api/me`, `POST /api/logout`
+- Orders, notifications
 
-1. Run `Login (admin)` or `Login (customer)` — token is saved to collection var `token`
-2. Send `Authorization: Bearer {{token}}` + `Accept: application/json`
-3. Writes (POST/PUT/DELETE catalog) require **admin**
-
-**Product images:** once after clone, link public storage (already done if you followed along):
-
-```bash
-./bin/artisan storage:link
-```
-
-- `POST /api/products/{id}/image` — admin, `multipart/form-data` field **`image`** (jpg/jpeg/png/webp, max 2MB)
-- `DELETE /api/products/{id}/image` — admin
-- Product JSON includes `image_path` + `image_url` (served from `/storage/...`)
+**Admin only (Bearer + admin role):**
+- Catalog writes (POST/PUT/DELETE products & categories)
 
 Seeded users: `admin@shop.test` / `customer@shop.test` — password `password`
 
-**Orders (Service layer):** login as **customer**, then:
-
-```http
-POST /api/orders
-Authorization: Bearer {{token}}
-{
-  "address_id": 1,
-  "items": [
-    { "product_id": 1, "quantity": 1 },
-    { "product_id": 2, "quantity": 2 }
-  ]
-}
-```
-
-Business rules (stock lock, snapshots, totals, DB transaction) live in `App\Services\OrderService` — not the controller.
-
-**Architecture (layers):**
-
-```
-Controller → Service → Repository (interface) → Eloquent
-```
-
-- Interfaces: `app/Repositories/Contracts/*`
-- Eloquent impl: `app/Repositories/Eloquent/*`
-- Bound in `AppServiceProvider` (swap/mock without changing services)
-
-**API errors (consistent envelope):**
-
-```json
-{
-  "success": false,
-  "message": "Insufficient stock for Wireless Headphones (available: 2).",
-  "error_code": "INSUFFICIENT_STOCK",
-  "errors": { "items": ["..."] }
-}
-```
-
-| `error_code` | When |
-|--------------|------|
-| `VALIDATION_ERROR` | FormRequest / validate() |
-| `UNAUTHENTICATED` | missing/invalid token |
-| `FORBIDDEN` | policy / admin middleware |
-| `NOT_FOUND` | missing model |
-| `INSUFFICIENT_STOCK` / `PRODUCT_UNAVAILABLE` / `INVALID_ADDRESS` | OrderService |
-| `PRODUCT_IN_USE` / `PRODUCT_IMAGE_MISSING` | ProductService |
-| `SERVER_ERROR` | unexpected |
-
-Handlers live in `bootstrap/app.php` → `App\Support\ApiErrorResponse`. Domain exceptions under `app/Exceptions/`.
-
-**Async (Events → Jobs → Notifications):** placing an order fires `OrderPlaced`:
-
-```
-OrderService::place
-  → OrderPlaced event
-    → SendOrderConfirmation listener → SendOrderConfirmationJob
-    → QueueLowStockCheck listener → CheckLowStockJob
-```
-
-- Confirmation: mail (`MAIL_MAILER=log` → `storage/logs/laravel.log`) + row in `notifications`
-- Low stock (≤ 10): database notification to **admin** users
-
 ```bash
-./bin/artisan migrate                 # notifications table
-# .env: QUEUE_CONNECTION=database
-
-# Terminal A — API
-./bin/serve
-
-# Terminal B — worker
-./bin/artisan queue:work
+./bin/artisan storage:link   # product images
+./bin/artisan queue:work     # notifications after orders
 ```
-
-Then Postman: Place order → `GET /api/notifications` (customer + admin tokens).
-
-**Browser (Breeze session):** http://127.0.0.1:8000/login → Notes at `/notes`
-
----
-
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

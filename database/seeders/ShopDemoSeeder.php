@@ -8,7 +8,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Profile;
-use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -85,31 +84,25 @@ class ShopDemoSeeder extends Seeder
             );
         });
 
-        $tags = collect(['Bestseller', 'New Arrival', 'Sale', 'Premium'])
-            ->map(function (string $name) {
-                return Tag::query()->updateOrCreate(
-                    ['slug' => Str::slug($name)],
-                    ['name' => $name]
-                );
-            });
+        $electronics = $categories->firstWhere('name', 'Electronics');
+        $homeKitchen = $categories->firstWhere('name', 'Home & Kitchen');
+        $books = $categories->firstWhere('name', 'Books');
 
         $catalog = [
-            ['Electronics', 'Wireless Headphones', 'WH-100', 2499.00, 40],
-            ['Electronics', 'USB-C Charger 65W', 'CHG-65', 1299.00, 80],
-            ['Home & Kitchen', 'Ceramic Mug Set', 'MUG-4', 699.00, 55],
-            ['Home & Kitchen', 'Steel Water Bottle', 'BTL-1L', 499.00, 120],
-            ['Books', 'Laravel From Scratch', 'BK-LFS', 899.00, 30],
-            ['Books', 'Clean Architecture Notes', 'BK-CAN', 799.00, 25],
+            ['Wireless Headphones', 'WH-100', 2499.00, 40, [$electronics->id]],
+            ['USB-C Charger 65W', 'CHG-65', 1299.00, 80, [$electronics->id]],
+            ['Ceramic Mug Set', 'MUG-4', 699.00, 55, [$homeKitchen->id]],
+            ['Steel Water Bottle', 'BTL-1L', 499.00, 120, [$homeKitchen->id, $electronics->id]],
+            ['Laravel From Scratch', 'BK-LFS', 899.00, 30, [$books->id]],
+            ['Clean Architecture Notes', 'BK-CAN', 799.00, 25, [$books->id, $electronics->id]],
         ];
 
-        $products = collect($catalog)->map(function (array $row) use ($categories) {
-            [$categoryName, $name, $sku, $price, $stock] = $row;
-            $category = $categories->firstWhere('name', $categoryName);
+        $products = collect($catalog)->map(function (array $row) {
+            [$name, $sku, $price, $stock, $categoryIds] = $row;
 
-            return Product::query()->updateOrCreate(
+            $product = Product::query()->updateOrCreate(
                 ['sku' => $sku],
                 [
-                    'category_id' => $category->id,
                     'name' => $name,
                     'slug' => Str::slug($name),
                     'description' => "Demo product: {$name}",
@@ -118,13 +111,11 @@ class ShopDemoSeeder extends Seeder
                     'is_active' => true,
                 ]
             );
-        });
 
-        foreach ($products as $index => $product) {
-            $product->tags()->sync(
-                $tags->random(fake()->numberBetween(1, 3))->pluck('id')->all()
-            );
-        }
+            $product->categories()->sync($categoryIds);
+
+            return $product;
+        });
 
         $order = Order::query()->updateOrCreate(
             ['number' => 'ORD-DEMO-0001'],

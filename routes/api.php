@@ -11,54 +11,41 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | API Routes (Postman)
 |--------------------------------------------------------------------------
-| Prefixed with /api automatically.
-|
-| Public: register / login
-| Protected: auth:sanctum Bearer token
-| Writes: admin only (policies)
-|
-| Postman headers:
-|   Accept: application/json
-|   Authorization: Bearer {token}
+| Public catalog reads — no Bearer token required.
+| Auth: register / login (public) | logout / me (token required).
+| Writes: admin only.
 */
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{category}', [CategoryController::class, 'show']);
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
-    // Authenticated users can read catalog
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::get('/categories/{category}', [CategoryController::class, 'show']);
-    Route::get('/products', [ProductController::class, 'index']);
-    Route::get('/products/{product}', [ProductController::class, 'show']);
-
-    // Orders — business rules in OrderService
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
 
-    // Database notifications (OrderPlaced / low stock)
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
 
-    // Admins manage catalog (enforced again in policies)
     Route::middleware('admin')->group(function () {
         Route::post('/categories', [CategoryController::class, 'store']);
         Route::put('/categories/{category}', [CategoryController::class, 'update']);
-        Route::patch('/categories/{category}', [CategoryController::class, 'update']);
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
 
         Route::post('/products', [ProductController::class, 'store']);
         Route::put('/products/{product}', [ProductController::class, 'update']);
-        Route::patch('/products/{product}', [ProductController::class, 'update']);
         Route::delete('/products/{product}', [ProductController::class, 'destroy']);
         Route::post('/products/{product}/image', [ProductController::class, 'uploadImage']);
         Route::delete('/products/{product}/image', [ProductController::class, 'deleteImage']);
-        Route::put('/products/{product}/tags', [ProductController::class, 'syncTags'])
-            ->name('products.tags.sync');
+        Route::put('/products/{product}/categories', [ProductController::class, 'syncCategories'])
+            ->name('products.categories.sync');
     });
 });

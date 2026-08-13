@@ -2,36 +2,29 @@
 
 namespace App\Providers;
 
-use App\Repositories\Contracts\OrderRepositoryInterface;
-use App\Repositories\Contracts\ProductRepositoryInterface;
-use App\Repositories\Eloquent\OrderRepository;
-use App\Repositories\Eloquent\ProductRepository;
+use App\Interfaces\Auth\UserRepositoryInterface;
+use App\Interfaces\Category\CategoryRepositoryInterface;
+use App\Interfaces\Order\OrderRepositoryInterface;
+use App\Interfaces\Product\ProductRepositoryInterface;
+use App\Repositories\CategoryRepository;
+use App\Repositories\OrderRepository;
+use App\Repositories\ProductRepository;
+use App\Repositories\UserRepository;
 use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        // Bind interfaces → Eloquent implementations (easy to swap / mock in tests)
+        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
+        $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        /*
-         | XAMPP ships php-8.2.4 beside php-7.4, but they share etc/php.ini
-         | which still has track_errors (invalid on PHP 8+).
-         | Our wrappers set PHPRC to shop-api/.php — artisan serve must
-         | forward that env to the child PHP process or it fatals.
-         */
         if (! in_array('PHPRC', ServeCommand::$passthroughVariables, true)) {
             ServeCommand::$passthroughVariables[] = 'PHPRC';
         }

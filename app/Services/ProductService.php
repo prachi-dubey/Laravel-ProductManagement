@@ -2,18 +2,14 @@
 
 namespace App\Services;
 
-use App\Exceptions\ProductImageMissingException;
-use App\Exceptions\ProductInUseException;
+use App\Exceptions\ApiException;
+use App\Interfaces\Product\ProductRepositoryInterface;
 use App\Models\Product;
-use App\Repositories\Contracts\ProductRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-/**
- * Business logic for products — persistence goes through ProductRepository.
- */
 class ProductService
 {
     /** @var ProductRepositoryInterface */
@@ -29,7 +25,12 @@ class ProductService
      */
     public function paginate(array $filters, int $perPage): LengthAwarePaginator
     {
-        return $this->products->paginateCatalog($filters, $perPage);
+        return $this->products->paginate($filters, $perPage);
+    }
+
+    public function show(Product $product): Product
+    {
+        return $this->products->loadRelations($product, ['categories']);
     }
 
     /**
@@ -37,17 +38,14 @@ class ProductService
      */
     public function create(array $data): Product
     {
-        $tagIds = $data['tag_ids'] ?? [];
-        unset($data['tag_ids']);
+        $categoryIds = $data['category_ids'];
+        unset($data['category_ids']);
 
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
         $data['is_active'] = $data['is_active'] ?? true;
 
         $product = $this->products->create($data);
-
-        if ($tagIds !== []) {
-            $this->products->syncTags($product, $tagIds);
-        }
+        $this->products->syncCategories($product, $categoryIds);
 
         return $this->products->loadRelations($product);
     }
@@ -57,8 +55,8 @@ class ProductService
      */
     public function update(Product $product, array $data): Product
     {
-        $tagIds = array_key_exists('tag_ids', $data) ? $data['tag_ids'] : null;
-        unset($data['tag_ids']);
+        $categoryIds = array_key_exists('category_ids', $data) ? $data['category_ids'] : null;
+        unset($data['category_ids']);
 
         if (array_key_exists('name', $data) && empty($data['slug'])) {
             $data['slug'] = Str::slug($data['name']);
@@ -66,8 +64,8 @@ class ProductService
 
         $this->products->update($product, $data);
 
-        if (is_array($tagIds)) {
-            $this->products->syncTags($product, $tagIds);
+        if (is_array($categoryIds)) {
+            $this->products->syncCategories($product, $categoryIds);
         }
 
         return $this->products->loadRelations($product);
@@ -76,7 +74,7 @@ class ProductService
     public function delete(Product $product): void
     {
         if ($this->products->hasOrderItems($product)) {
-            throw new ProductInUseException();
+            throw ApiException::productInUse();
         }
 
         $this->deleteStoredImage($product->image_path);
@@ -99,7 +97,7 @@ class ProductService
     public function deleteImage(Product $product): Product
     {
         if (! $product->image_path) {
-            throw new ProductImageMissingException();
+            throw ApiException::productImageMissing();
         }
 
         $this->deleteStoredImage($product->image_path);
@@ -112,11 +110,11 @@ class ProductService
     }
 
     /**
-     * @param  list<int>  $tagIds
+     * @param  list<int>  $categoryIds
      */
-    public function syncTags(Product $product, array $tagIds): Product
+    public function syncCategories(Product $product, array $categoryIds): Product
     {
-        $this->products->syncTags($product, $tagIds);
+        $this->products->syncCategories($product, $categoryIds);
 
         return $this->products->loadRelations($product);
     }

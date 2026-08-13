@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\OrderPlaced;
+use App\Events\Order\OrderPlaced;
 use App\Jobs\SendOrderConfirmationJob;
 
 /**

@@ -1,0 +1,60 @@
+<?php
+
+return [
+
+    'auth' => [
+        'registered' => 'Registered successfully.',
+        'logged_in' => 'Logged in successfully.',
+        'logged_out' => 'Logged out successfully.',
+        'me_retrieved' => 'Authenticated user retrieved.',
+        'credentials_invalid' => 'The provided credentials are incorrect.',
+        'admin_required' => 'Admin access required.',
+    ],
+
+    'products' => [
+        'listed' => 'Products retrieved successfully.',
+        'created' => 'Product created successfully.',
+        'shown' => 'Product retrieved successfully.',
+        'updated' => 'Product updated successfully.',
+        'deleted' => 'Product deleted successfully.',
+        'image_uploaded' => 'Product image uploaded successfully.',
+        'image_deleted' => 'Product image deleted successfully.',
+        'categories_synced' => 'Product categories synced successfully.',
+        'in_use' => 'Cannot delete product that appears on existing orders.',
+        'image_missing' => 'Product has no image to delete.',
+    ],
+
+    'categories' => [
+        'listed' => 'Categories retrieved successfully.',
+        'created' => 'Category created successfully.',
+        'shown' => 'Category retrieved successfully.',
+        'updated' => 'Category updated successfully.',
+        'deleted' => 'Category deleted successfully.',
+        'in_use' => 'Cannot delete category while products are still linked to it.',
+    ],
+
+    'orders' => [
+        'listed' => 'Orders retrieved successfully.',
+        'placed' => 'Order placed successfully.',
+        'shown' => 'Order retrieved successfully.',
+        'invalid_address' => 'Address not found for this user.',
+        'product_unavailable' => 'One or more products are unavailable.',
+        'insufficient_stock' => 'Insufficient stock for :name (available: :available).',
+    ],
+
+    'notifications' => [
+        'listed' => 'Notifications retrieved successfully.',
+        'marked_read' => 'Notification marked as read.',
+        'all_marked_read' => 'All notifications marked as read.',
+    ],
+
+    'errors' => [
+        'validation' => 'The given data was invalid.',
+        'unauthenticated' => 'Unauthenticated.',
+        'forbidden' => 'This action is unauthorized.',
+        'not_found' => 'Resource not found.',
+        'server' => 'Server error.',
+        'bad_request' => 'Bad request.',
+    ],
+
+];

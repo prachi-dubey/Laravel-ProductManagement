@@ -6,7 +6,7 @@ use Exception;
 use Throwable;
 
 /**
- * Base domain/API exception — rendered as consistent JSON for /api/*.
+ * Single API/domain exception — use static helpers for each error case.
  */
 class ApiException extends Exception
 {
@@ -52,5 +52,80 @@ class ApiException extends Exception
     public function errors(): array
     {
         return $this->errors;
+    }
+
+    public static function invalidAddress(): self
+    {
+        $message = __('messages.orders.invalid_address');
+
+        return new self(
+            $message,
+            422,
+            'INVALID_ADDRESS',
+            ['address_id' => [$message]]
+        );
+    }
+
+    public static function productUnavailable(): self
+    {
+        $message = __('messages.orders.product_unavailable');
+
+        return new self(
+            $message,
+            422,
+            'PRODUCT_UNAVAILABLE',
+            ['items' => [$message]]
+        );
+    }
+
+    public static function insufficientStock(string $productName, int $available): self
+    {
+        $message = __('messages.orders.insufficient_stock', [
+            'name' => $productName,
+            'available' => $available,
+        ]);
+
+        return new self(
+            $message,
+            422,
+            'INSUFFICIENT_STOCK',
+            ['items' => [$message]]
+        );
+    }
+
+    public static function productInUse(): self
+    {
+        $message = __('messages.products.in_use');
+
+        return new self(
+            $message,
+            422,
+            'PRODUCT_IN_USE',
+            ['product' => [$message]]
+        );
+    }
+
+    public static function productImageMissing(): self
+    {
+        $message = __('messages.products.image_missing');
+
+        return new self(
+            $message,
+            422,
+            'PRODUCT_IMAGE_MISSING',
+            ['image' => [$message]]
+        );
+    }
+
+    public static function categoryInUse(): self
+    {
+        $message = __('messages.categories.in_use');
+
+        return new self(
+            $message,
+            422,
+            'CATEGORY_IN_USE',
+            ['category' => [$message]]
+        );
     }
 }

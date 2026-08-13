@@ -204,7 +204,7 @@
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
-              "raw": "{{base_url}}/api/products?page=1&per_page=2&sort=-price&search=&category_id=&tag_id=&min_price=&max_price=&is_active=1",
+              "raw": "{{base_url}}/api/products?page=1&per_page=2&sort=-price&search=&category_id=&min_price=&max_price=&is_active=1",
               "host": ["{{base_url}}"],
               "path": ["api", "products"],
               "query": [
@@ -212,8 +212,7 @@
                 { "key": "per_page", "value": "2" },
                 { "key": "sort", "value": "-price", "description": "field or -field for DESC" },
                 { "key": "search", "value": "", "description": "name or sku" },
-                { "key": "category_id", "value": "" },
-                { "key": "tag_id", "value": "" },
+                { "key": "category_id", "value": "", "description": "filter products linked to this category" },
                 { "key": "min_price", "value": "" },
                 { "key": "max_price", "value": "" },
                 { "key": "is_active", "value": "1" }
@@ -232,7 +231,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"category_id\": 1,\n  \"name\": \"Demo Mouse\",\n  \"sku\": \"MSE-AUTH-01\",\n  \"price\": 799,\n  \"stock\": 25,\n  \"tag_ids\": [1, 2]\n}"
+              "raw": "{\n  \"category_ids\": [1, 2],\n  \"name\": \"Demo Mouse\",\n  \"sku\": \"MSE-AUTH-01\",\n  \"price\": 799,\n  \"stock\": 25\n}"
             },
             "url": "{{base_url}}/api/products"
           }
@@ -249,7 +248,7 @@
           }
         },
         {
-          "name": "Sync product tags (admin)",
+          "name": "Sync product categories (admin)",
           "request": {
             "method": "PUT",
             "header": [
@@ -259,9 +258,9 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tag_ids\": [1, 3]\n}"
+              "raw": "{\n  \"category_ids\": [1, 3]\n}"
             },
-            "url": "{{base_url}}/api/products/{{product_id}}/tags"
+            "url": "{{base_url}}/api/products/{{product_id}}/categories"
           }
         },
         {

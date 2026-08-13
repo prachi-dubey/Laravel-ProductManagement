@@ -9,13 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * 1:N Category → Products
+     * Categories linked via category_product pivot (M:N).
      */
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('category_id')->constrained()->restrictOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->string('sku')->unique();

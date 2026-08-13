@@ -3,17 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\StoreOrderRequest;
-use App\Http\Resources\Api\OrderResource;
+use App\Http\Requests\Api\Order\StoreOrderRequest;
+use App\Http\Resources\Api\Order\OrderResource;
 use App\Models\Order;
 use App\Services\OrderService;
-use App\Support\ApiListQuery;
+use App\Helper\ApiListHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * Thin HTTP layer — OrderService → repositories → Eloquent.
- */
 class OrderController extends Controller
 {
     /** @var OrderService */
@@ -28,15 +25,13 @@ class OrderController extends Controller
     {
         $this->authorize('viewAny', Order::class);
 
-        $perPage = ApiListQuery::perPage($request)['per_page'];
+        $perPage = ApiListHelper::perPage($request)['per_page'];
         $paginator = $this->orders->paginateForViewer($request->user(), $perPage);
-        $paginator->appends($request->query());
+        $paginator->appends($request->input());
 
-        return response()->json(
-            ApiListQuery::paginatedResponse(
-                OrderResource::collection($paginator),
-                'Orders retrieved successfully.'
-            )
+        return $this->paginated(
+            OrderResource::collection($paginator),
+            __('messages.orders.listed')
         );
     }
 
@@ -46,11 +41,11 @@ class OrderController extends Controller
 
         $order = $this->orders->place($request->user(), $request->validated());
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order placed successfully.',
-            'data' => new OrderResource($order),
-        ], 201);
+        return $this->success(
+            __('messages.orders.placed'),
+            new OrderResource($order),
+            201
+        );
     }
 
     public function show(Order $order): JsonResponse
@@ -59,10 +54,9 @@ class OrderController extends Controller
 
         $order->load(['items', 'address']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Order retrieved successfully.',
-            'data' => new OrderResource($order),
-        ]);
+        return $this->success(
+            __('messages.orders.shown'),
+            new OrderResource($order)
+        );
     }
 }

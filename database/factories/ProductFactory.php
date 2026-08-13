@@ -20,7 +20,6 @@ class ProductFactory extends Factory
         $name = fake()->unique()->words(3, true);
 
         return [
-            'category_id' => Category::factory(),
             'name' => Str::title($name),
             'slug' => Str::slug($name).'-'.fake()->unique()->numerify('####'),
             'sku' => strtoupper(fake()->unique()->bothify('SKU-####??')),
@@ -30,5 +29,14 @@ class ProductFactory extends Factory
             'image_path' => null,
             'is_active' => true,
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Product $product) {
+            $product->categories()->sync(
+                Category::factory()->count(fake()->numberBetween(1, 2))->create()->pluck('id')->all()
+            );
+        });
     }
 }

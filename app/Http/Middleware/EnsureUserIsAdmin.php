@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Helper\ApiErrorResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -9,8 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureUserIsAdmin
 {
     /**
-     * Allow only admin role through (API + web).
-     *
      * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
@@ -19,14 +18,14 @@ class EnsureUserIsAdmin
 
         if (! $user || ! $user->isAdmin()) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return \App\Support\ApiErrorResponse::make(
-                    'Admin access required.',
+                return ApiErrorResponse::make(
+                    __('messages.auth.admin_required'),
                     403,
                     'FORBIDDEN'
                 );
             }
 
-            abort(403, 'Admin access required.');
+            abort(403, __('messages.auth.admin_required'));
         }
 
         return $next($request);

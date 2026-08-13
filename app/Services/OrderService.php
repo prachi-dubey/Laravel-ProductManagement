@@ -2,15 +2,13 @@
 
 namespace App\Services;
 
-use App\Exceptions\InsufficientStockException;
-use App\Exceptions\InvalidAddressException;
-use App\Exceptions\ProductUnavailableException;
-use App\Events\OrderPlaced;
+use App\Exceptions\ApiException;
+use App\Events\Order\OrderPlaced;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
-use App\Repositories\Contracts\OrderRepositoryInterface;
-use App\Repositories\Contracts\ProductRepositoryInterface;
+use App\Interfaces\Order\OrderRepositoryInterface;
+use App\Interfaces\Product\ProductRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
@@ -55,7 +53,7 @@ class OrderService
         );
 
         if (! $address) {
-            throw new InvalidAddressException();
+            throw ApiException::invalidAddress();
         }
 
         $order = DB::transaction(function () use ($user, $address, $data) {
@@ -66,13 +64,13 @@ class OrderService
                 $product = $this->products->findForUpdate((int) $row['product_id']);
 
                 if (! $product || ! $product->is_active) {
-                    throw new ProductUnavailableException();
+                    throw ApiException::productUnavailable();
                 }
 
                 $qty = (int) $row['quantity'];
 
                 if ($product->stock < $qty) {
-                    throw new InsufficientStockException($product->name, $product->stock);
+                    throw ApiException::insufficientStock($product->name, $product->stock);
                 }
 
                 $unitPrice = (float) $product->price;
