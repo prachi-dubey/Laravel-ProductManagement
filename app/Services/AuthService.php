@@ -20,7 +20,7 @@ class AuthService
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array{user: User, token: string, token_type: string}
+     * @return array{user: User, token: string}
      */
     public function register(array $data): array
     {
@@ -36,7 +36,7 @@ class AuthService
 
     /**
      * @param  array<string, mixed>  $credentials
-     * @return array{user: User, token: string, token_type: string}
+     * @return array{user: User, token: string}
      */
     public function login(array $credentials): array
     {
@@ -66,14 +66,13 @@ class AuthService
     }
 
     /**
-     * @return array{user: User, token: string, token_type: string}
+     * @return array{user: User, token: string}
      */
     private function tokenPayload(User $user): array
     {
         return [
             'user' => $user,
             'token' => $user->createToken('api-token')->plainTextToken,
-            'token_type' => 'Bearer',
         ];
     }
 }

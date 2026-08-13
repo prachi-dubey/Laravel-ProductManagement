@@ -82,7 +82,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"New Customer\",\n  \"email\": \"new@shop.test\",\n  \"password\": \"password\",\n  \"password_confirmation\": \"password\"\n}"
+              "raw": "{\n  \"name\": \"New Customer\",\n  \"email\": \"new@shop.test\",\n  \"password\": \"Shop@1234\",\n  \"password_confirmation\": \"Shop@1234\"\n}"
             },
             "url": "{{base_url}}/api/register"
           }

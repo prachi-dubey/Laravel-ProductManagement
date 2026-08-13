@@ -9,11 +9,8 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes (Postman)
+| API Public Routes (Postman)
 |--------------------------------------------------------------------------
-| Public catalog reads — no Bearer token required.
-| Auth: register / login (public) | logout / me (token required).
-| Writes: admin only.
 */
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -22,6 +19,12 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{category}', [CategoryController::class, 'show']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
+
+/*
+|--------------------------------------------------------------------------
+| API Private Routes (Postman)
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
