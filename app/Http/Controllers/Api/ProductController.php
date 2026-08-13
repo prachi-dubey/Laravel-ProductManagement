@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Product\IndexProductRequest;
 use App\Http\Requests\Api\Product\SaveProductRequest;
-use App\Http\Requests\Api\Product\UploadProductImageRequest;
 use App\Http\Resources\Api\Product\ProductResource;
 use App\Models\Product;
 use App\Services\ProductService;
 use App\Helper\ApiListHelper;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class ProductController extends Controller
 {
@@ -49,11 +49,10 @@ class ProductController extends Controller
         $this->authorize('create', Product::class);
 
         $product = $this->products->create($request->validated());
-
         return $this->success(
             __('messages.products.created'),
             new ProductResource($product),
-            201
+            Response::HTTP_CREATED
         );
     }
 
@@ -76,30 +75,6 @@ class ProductController extends Controller
         $this->products->delete($product);
 
         return $this->success(__('messages.products.deleted'));
-    }
-
-    public function uploadImage(UploadProductImageRequest $request, Product $product): JsonResponse
-    {
-        $this->authorize('update', $product);
-
-        $product = $this->products->uploadImage($product, $request->file('image'));
-
-        return $this->success(
-            __('messages.products.image_uploaded'),
-            new ProductResource($product)
-        );
-    }
-
-    public function deleteImage(Product $product): JsonResponse
-    {
-        $this->authorize('update', $product);
-
-        $product = $this->products->deleteImage($product);
-
-        return $this->success(
-            __('messages.products.image_deleted'),
-            new ProductResource($product)
-        );
     }
 
     public function syncCategories(SaveProductRequest $request, Product $product): JsonResponse

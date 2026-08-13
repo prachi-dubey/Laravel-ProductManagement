@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Address;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -50,22 +49,12 @@ class ShopDemoSeeder extends Seeder
             [
                 'phone' => '+919811122233',
                 'bio' => 'Regular customer account',
-            ]
-        );
-
-        $address = Address::query()->updateOrCreate(
-            [
-                'user_id' => $customer->id,
-                'label' => 'Home',
-            ],
-            [
                 'line1' => '12 MG Road',
                 'line2' => 'Near Metro',
                 'city' => 'Bengaluru',
                 'state' => 'Karnataka',
                 'postal_code' => '560001',
                 'country' => 'IN',
-                'is_default' => true,
             ]
         );
 
@@ -121,10 +110,15 @@ class ShopDemoSeeder extends Seeder
             ['number' => 'ORD-DEMO-0001'],
             [
                 'user_id' => $customer->id,
-                'address_id' => $address->id,
                 'status' => Order::STATUS_PENDING,
                 'subtotal' => 0,
                 'total' => 0,
+                'shipping_line1' => '12 MG Road',
+                'shipping_line2' => 'Near Metro',
+                'shipping_city' => 'Bengaluru',
+                'shipping_state' => 'Karnataka',
+                'shipping_postal_code' => '560001',
+                'shipping_country' => 'IN',
                 'placed_at' => now(),
             ]
         );

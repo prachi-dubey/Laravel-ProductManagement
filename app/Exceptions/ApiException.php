@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\Response;
 use Throwable;
 
 /**
@@ -24,7 +25,7 @@ class ApiException extends Exception
      */
     public function __construct(
         string $message,
-        int $status = 422,
+        int $status = Response::HTTP_UNPROCESSABLE_ENTITY,
         string $errorCode = 'API_ERROR',
         array $errors = [],
         ?Throwable $previous = null
@@ -60,9 +61,9 @@ class ApiException extends Exception
 
         return new self(
             $message,
-            422,
+            Response::HTTP_UNPROCESSABLE_ENTITY,
             'INVALID_ADDRESS',
-            ['address_id' => [$message]]
+            ['profile' => [$message]]
         );
     }
 
@@ -72,7 +73,7 @@ class ApiException extends Exception
 
         return new self(
             $message,
-            422,
+            Response::HTTP_UNPROCESSABLE_ENTITY,
             'PRODUCT_UNAVAILABLE',
             ['items' => [$message]]
         );
@@ -87,7 +88,7 @@ class ApiException extends Exception
 
         return new self(
             $message,
-            422,
+            Response::HTTP_UNPROCESSABLE_ENTITY,
             'INSUFFICIENT_STOCK',
             ['items' => [$message]]
         );
@@ -99,21 +100,9 @@ class ApiException extends Exception
 
         return new self(
             $message,
-            422,
+            Response::HTTP_UNPROCESSABLE_ENTITY,
             'PRODUCT_IN_USE',
             ['product' => [$message]]
-        );
-    }
-
-    public static function productImageMissing(): self
-    {
-        $message = __('messages.products.image_missing');
-
-        return new self(
-            $message,
-            422,
-            'PRODUCT_IMAGE_MISSING',
-            ['image' => [$message]]
         );
     }
 
@@ -123,7 +112,7 @@ class ApiException extends Exception
 
         return new self(
             $message,
-            422,
+            Response::HTTP_UNPROCESSABLE_ENTITY,
             'CATEGORY_IN_USE',
             ['category' => [$message]]
         );

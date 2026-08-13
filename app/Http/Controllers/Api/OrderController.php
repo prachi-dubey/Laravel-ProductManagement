@@ -10,6 +10,7 @@ use App\Services\OrderService;
 use App\Helper\ApiListHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class OrderController extends Controller
 {
@@ -44,7 +45,7 @@ class OrderController extends Controller
         return $this->success(
             __('messages.orders.placed'),
             new OrderResource($order),
-            201
+            Response::HTTP_CREATED
         );
     }
 
@@ -52,7 +53,7 @@ class OrderController extends Controller
     {
         $this->authorize('view', $order);
 
-        $order->load(['items', 'address']);
+        $order->load(['items']);
 
         return $this->success(
             __('messages.orders.shown'),

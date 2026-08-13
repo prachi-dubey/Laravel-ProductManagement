@@ -10,6 +10,7 @@ use App\Http\Resources\Api\Auth\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AuthController extends Controller
 {
@@ -28,7 +29,7 @@ class AuthController extends Controller
         return $this->success(
             __('messages.auth.registered'),
             new AuthResource($payload),
-            201
+            Response::HTTP_CREATED
         );
     }
 

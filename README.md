@@ -55,6 +55,6 @@ Import [`postman/shop-api-categories-products.postman_collection.json`](postman/
 Seeded users: `admin@shop.test` / `customer@shop.test` — password `password`
 
 ```bash
-./bin/artisan storage:link   # product images
+./bin/artisan storage:link   # product images on POST/PUT /api/products
 ./bin/artisan queue:work     # notifications after orders
 ```

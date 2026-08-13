@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api\Product;
 
-use App\Http\Requests\Api\Concerns\CategoryIdsRules;
+use App\Http\Requests\Api\CategoryIdsRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -56,9 +56,34 @@ class SaveProductRequest extends FormRequest
                 'description' => [$updating ? 'sometimes' : 'nullable', 'nullable', 'string'],
                 'price' => [$updating ? 'sometimes' : 'required', 'numeric', 'min:0'],
                 'stock' => [$updating ? 'sometimes' : 'required', 'integer', 'min:0'],
-                'image_path' => [$updating ? 'sometimes' : 'nullable', 'nullable', 'string', 'max:255'],
                 'is_active' => ['sometimes', 'boolean'],
+                'image' => ['sometimes', 'nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+                'remove_image' => ['sometimes', 'boolean'],
             ]
         );
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $categoryIds = $this->input('category_ids');
+
+        if (is_string($categoryIds)) {
+            $decoded = json_decode($categoryIds, true);
+            if (is_array($decoded)) {
+                $this->merge(['category_ids' => $decoded]);
+            }
+        }
+
+        if ($this->has('is_active')) {
+            $this->merge([
+                'is_active' => filter_var($this->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+            ]);
+        }
+
+        if ($this->has('remove_image')) {
+            $this->merge([
+                'remove_image' => filter_var($this->input('remove_image'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+            ]);
+        }
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Repositories;
 
 use App\Interfaces\Order\OrderRepositoryInterface;
-use App\Models\Address;
 use App\Models\Order;
+use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -15,7 +15,7 @@ class OrderRepository implements OrderRepositoryInterface
      */
     public function create(array $data): Order
     {
-        return Order::query()->create($data);
+        return Order::create($data);
     }
 
     /**
@@ -28,20 +28,23 @@ class OrderRepository implements OrderRepositoryInterface
 
     public function numberExists(string $number): bool
     {
-        return Order::query()->where('number', $number)->exists();
+        return Order::where('number', $number)->exists();
     }
 
-    public function findAddressForUser(int $addressId, int $userId): ?Address
+    public function findShippingProfile(User $user): ?Profile
     {
-        return Address::query()
-            ->where('id', $addressId)
-            ->where('user_id', $userId)
-            ->first();
+        $profile = $user->profile;
+
+        if (! $profile || ! $profile->hasShippingAddress()) {
+            return null;
+        }
+
+        return $profile;
     }
 
     public function paginateForViewer(User $user, int $perPage): LengthAwarePaginator
     {
-        $builder = Order::query()->with(['items'])->latest('placed_at');
+        $builder = Order::with(['items'])->latest('placed_at');
 
         if (! $user->isAdmin()) {
             $builder->where('user_id', $user->id);
@@ -53,7 +56,7 @@ class OrderRepository implements OrderRepositoryInterface
     /**
      * @param  list<string>  $relations
      */
-    public function loadRelations(Order $order, array $relations = ['items', 'address']): Order
+    public function loadRelations(Order $order, array $relations = ['items']): Order
     {
         return $order->load($relations);
     }

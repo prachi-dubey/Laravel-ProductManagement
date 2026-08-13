@@ -24,12 +24,14 @@ class AuthService
      */
     public function register(array $data): array
     {
-        $user = $this->users->create([
+        $payload = [
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
             'role' => User::ROLE_CUSTOMER,
-        ]);
+        ];
+
+        $user = $this->users->create($payload);
 
         return $this->tokenPayload($user);
     }

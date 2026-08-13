@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Services\CategoryService;
 use App\Helper\ApiListHelper;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class CategoryController extends Controller
 {
@@ -52,7 +53,7 @@ class CategoryController extends Controller
         return $this->success(
             __('messages.categories.created'),
             new CategoryResource($category),
-            201
+            Response::HTTP_CREATED
         );
     }
 

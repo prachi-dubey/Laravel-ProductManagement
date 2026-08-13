@@ -19,6 +19,12 @@ return new class extends Migration
             $table->string('phone', 30)->nullable();
             $table->string('avatar_path')->nullable();
             $table->text('bio')->nullable();
+            $table->string('line1')->nullable();
+            $table->string('line2')->nullable();
+            $table->string('city', 80)->nullable();
+            $table->string('state', 80)->nullable();
+            $table->string('postal_code', 20)->nullable();
+            $table->string('country', 2)->nullable();
             $table->timestamps();
 
             $table->unique('user_id');

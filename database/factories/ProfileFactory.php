@@ -21,6 +21,12 @@ class ProfileFactory extends Factory
             'phone' => fake()->numerify('+91##########'),
             'avatar_path' => null,
             'bio' => fake()->optional()->sentence(),
+            'line1' => fake()->streetAddress(),
+            'line2' => fake()->optional()->secondaryAddress(),
+            'city' => fake()->city(),
+            'state' => fake()->state(),
+            'postal_code' => fake()->postcode(),
+            'country' => 'IN',
         ];
     }
 }

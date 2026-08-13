@@ -6,6 +6,7 @@ use App\Helper\ApiListHelper;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response;
 
 abstract class Controller
 {
@@ -16,7 +17,7 @@ abstract class Controller
      *
      * @param  mixed  $data
      */
-    protected function success(string $message, $data = null, int $status = 200): JsonResponse
+    protected function success(string $message, $data = null, int $status = Response::HTTP_OK): JsonResponse
     {
         $payload = [
             'success' => true,

@@ -15,7 +15,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function paginate(array $filters, int $perPage): LengthAwarePaginator
     {
-        $builder = Product::query()->with(['categories']);
+        $builder = Product::with(['categories']);
 
         if (! empty($filters['search'])) {
             $search = $filters['search'];
@@ -60,7 +60,7 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function findById(int $id): ?Product
     {
-        return Product::query()->with(['categories'])->find($id);
+        return Product::with(['categories'])->find($id);
     }
 
     /**
@@ -68,7 +68,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function create(array $data): Product
     {
-        return Product::query()->create($data);
+        return Product::create($data);
     }
 
     /**
@@ -102,7 +102,7 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function findForUpdate(int $id): ?Product
     {
-        return Product::query()->lockForUpdate()->find($id);
+        return Product::lockForUpdate()->find($id);
     }
 
     public function decrementStock(Product $product, int $quantity): void

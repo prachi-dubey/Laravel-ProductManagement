@@ -46,8 +46,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/products', [ProductController::class, 'store']);
         Route::put('/products/{product}', [ProductController::class, 'update']);
         Route::delete('/products/{product}', [ProductController::class, 'destroy']);
-        Route::post('/products/{product}/image', [ProductController::class, 'uploadImage']);
-        Route::delete('/products/{product}/image', [ProductController::class, 'deleteImage']);
         Route::put('/products/{product}/categories', [ProductController::class, 'syncCategories'])
             ->name('products.categories.sync');
     });

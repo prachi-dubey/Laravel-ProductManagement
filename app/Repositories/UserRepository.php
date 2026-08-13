@@ -11,13 +11,16 @@ class UserRepository implements UserRepositoryInterface
      * @param  array<string, mixed>  $data
      */
     public function create(array $data): User
-    {
-        return User::query()->create($data);
+    { 
+        $user = User::create($data);
+        $user->profile()->create([]);
+
+        return $user;
     }
 
     public function findByEmail(string $email): ?User
     {
-        return User::query()->where('email', $email)->first();
+        return User::where('email', $email)->first();
     }
 
     /**

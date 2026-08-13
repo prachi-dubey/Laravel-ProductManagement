@@ -15,7 +15,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      */
     public function paginate(array $filters, int $perPage): LengthAwarePaginator
     {
-        $builder = Category::query()->withCount('products');
+        $builder = Category::withCount('products');
 
         if (! empty($filters['search'])) {
             $search = $filters['search'];
@@ -48,7 +48,7 @@ class CategoryRepository implements CategoryRepositoryInterface
      */
     public function create(array $data): Category
     {
-        return Category::query()->create($data);
+        return Category::create($data);
     }
 
     /**

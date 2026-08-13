@@ -40,23 +40,21 @@ class OrderService
      * Place an order for the given user.
      *
      * Expected $data:
-     * - address_id (int, belongs to user)
      * - items: list of { product_id, quantity }
+     *
+     * Shipping address is taken from the user's profile and snapshotted onto the order.
      *
      * @param  array<string, mixed>  $data
      */
     public function place(User $user, array $data): Order
     {
-        $address = $this->orders->findAddressForUser(
-            (int) $data['address_id'],
-            $user->id
-        );
+        $profile = $this->orders->findShippingProfile($user);
 
-        if (! $address) {
+        if (! $profile) {
             throw ApiException::invalidAddress();
         }
 
-        $order = DB::transaction(function () use ($user, $address, $data) {
+        $order = DB::transaction(function () use ($user, $profile, $data) {
             $lines = [];
             $subtotal = 0;
 
@@ -87,15 +85,14 @@ class OrderService
 
             $subtotal = round($subtotal, 2);
 
-            $order = $this->orders->create([
+            $order = $this->orders->create(array_merge([
                 'number' => $this->generateNumber(),
                 'user_id' => $user->id,
-                'address_id' => $address->id,
                 'status' => Order::STATUS_PENDING,
                 'subtotal' => $subtotal,
                 'total' => $subtotal,
                 'placed_at' => now(),
-            ]);
+            ], $profile->shippingSnapshot()));
 
             foreach ($lines as $line) {
                 /** @var Product $product */
@@ -112,7 +109,7 @@ class OrderService
                 $this->products->decrementStock($product, $line['quantity']);
             }
 
-            return $this->orders->loadRelations($order, ['items.product', 'address', 'user']);
+            return $this->orders->loadRelations($order, ['items.product', 'user']);
         });
 
         // After commit: event → listeners → queued jobs → notifications

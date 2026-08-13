@@ -20,12 +20,12 @@ class EnsureUserIsAdmin
             if ($request->is('api/*') || $request->expectsJson()) {
                 return ApiErrorResponse::make(
                     __('messages.auth.admin_required'),
-                    403,
+                    Response::HTTP_FORBIDDEN,
                     'FORBIDDEN'
                 );
             }
 
-            abort(403, __('messages.auth.admin_required'));
+            abort(Response::HTTP_FORBIDDEN, __('messages.auth.admin_required'));
         }
 
         return $next($request);

@@ -26,10 +26,15 @@ class Order extends Model
     protected $fillable = [
         'number',
         'user_id',
-        'address_id',
         'status',
         'subtotal',
         'total',
+        'shipping_line1',
+        'shipping_line2',
+        'shipping_city',
+        'shipping_state',
+        'shipping_postal_code',
+        'shipping_country',
         'placed_at',
     ];
 
@@ -48,11 +53,6 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function address(): BelongsTo
-    {
-        return $this->belongsTo(Address::class);
     }
 
     public function items(): HasMany

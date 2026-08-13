@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Api\Concerns;
+namespace App\Http\Requests\Api;
 
 trait CategoryIdsRules
 {
