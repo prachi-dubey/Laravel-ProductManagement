@@ -4,10 +4,11 @@ namespace App\Notifications;
 
 use App\Models\Product;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Admin inbox: product stock is low after an order.
+ * Admin: email (MAIL_MAILER=log locally) + database inbox row.
  * Sent from CheckLowStockJob (already queued).
  */
 class LowStockNotification extends Notification
@@ -27,7 +28,21 @@ class LowStockNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['mail', 'database'];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $product = $this->product;
+
+        return (new MailMessage)
+            ->subject('Low stock: '.$product->name)
+            ->greeting('Hi '.$notifiable->name.',')
+            ->line('A product is at or below the stock threshold.')
+            ->line('Product: '.$product->name)
+            ->line('SKU: '.$product->sku)
+            ->line('Stock left: '.$product->stock)
+            ->line('Please restock this item.');
     }
 
     /**
