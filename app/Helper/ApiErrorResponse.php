@@ -101,6 +101,7 @@ class ApiErrorResponse
         $payload = [
             'success' => false,
             'message' => $message,
+            'status_code' => $status,
             'error_code' => $errorCode,
         ];
 
