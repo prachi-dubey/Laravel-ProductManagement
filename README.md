@@ -11,7 +11,7 @@ Built with Laravel and Docker so you can run the full stack without installing P
 - **Backend**: Laravel 12, PHP 8.2
 - **Runtime & Services**: Docker & Docker Compose
 - **Database**: MySQL 8
-- **Cache**: Redis
+- **Cache**: Redis service included and configured
 - **Queue**: Laravel database queue (worker runs inside the app container)
 - **Auth**: Laravel Sanctum (token-based)
 - **Testing**: PHPUnit
@@ -24,6 +24,7 @@ Built with Laravel and Docker so you can run the full stack without installing P
 - **Categories & products** — CRUD, image upload, inventory, many-to-many categories
 - **Orders** — place orders with status workflow (`pending → paid → shipped`, plus `cancelled`)
 - **Notifications** — order confirmation and low-stock alerts (queued)
+- **Redis-ready setup** — Redis runs in Docker and is configured for Laravel cache usage
 - **Consistent JSON responses** — `{ "success": true, "message": "...", "data": {} }`
 - **API rate limiting** — 60 requests/minute (Laravel API default)
 
@@ -96,6 +97,8 @@ This starts 5 services:
 | phpMyAdmin | http://localhost:8080   |
 | MySQL      | localhost:3307          |
 | Redis      | localhost:6384          |
+
+Redis is currently available for cache/configuration, but the app queue still uses the database driver and there is no Redis-specific caching logic in the domain code yet.
 
 ### 4. Verify the API
 
