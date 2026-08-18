@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Shop API — Auth + Catalog",
-    "description": "Sanctum token auth + protected category/product CRUD. Docker base_url=http://localhost:84 — local XAMPP base_url=http://127.0.0.1:8000",
+    "description": "Sanctum token auth + catalog/orders. Docker `base_url=http://localhost:84`. Local XAMPP `base_url=http://127.0.0.1:8000`.\n\nUse **View → Show description** (or the Docs panel) on each request to see param spelling, type, required/optional, and example values.\n\n## Spelling (use these exact keys)\n\nDo **not** send `category_id` on create/update product. Use **`category_ids`** (plural array).\nDo **not** send `tag_ids`. This API has no tags.\n\n| Key | Type | Where |\n|---|---|---|\n| `email` | string (email) | login / register body |\n| `password` | string | login / register body |\n| `password_confirmation` | string | register body |\n| `name` | string | register / category / product body |\n| `slug` | string | category / product body (optional) |\n| `description` | string | category / product body (optional) |\n| `is_active` | boolean (`true`/`false` or `1`/`0`) | list query + category/product body |\n| `page` | integer ≥ 1 | list query |\n| `per_page` | integer 1–50 | list query |\n| `sort` | string (`field` or `-field`) | list query |\n| `search` | string | list query |\n| `category_id` | integer | **product list filter only** |\n| `min_price` / `max_price` | number | product list query |\n| `sku` | string | product body |\n| `price` | number ≥ 0 | product body |\n| `stock` | integer ≥ 0 | product body |\n| `category_ids` | array of integers | product create/update/sync body |\n| `image` | file jpg/jpeg/png/webp, max 2MB | product form-data |\n| `remove_image` | boolean | product update form-data |\n| `items` | array | order body |\n| `items[].product_id` | integer | order body |\n| `items[].quantity` | integer 1–100 | order body |\n\nHeader on protected routes: `Authorization: Bearer {{token}}` + `Accept: application/json`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -9,7 +9,8 @@
     { "key": "token", "value": "" },
     { "key": "category_id", "value": "1" },
     { "key": "product_id", "value": "1" },
-    { "key": "order_id", "value": "1" }
+    { "key": "order_id", "value": "1" },
+    { "key": "notification_id", "value": "" }
   ],
   "item": [
     {
@@ -40,7 +41,8 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@shop.test\",\n  \"password\": \"password\"\n}"
             },
-            "url": "{{base_url}}/api/login"
+            "url": "{{base_url}}/api/login",
+            "description": "Public. Saves `token` on success.\n\n**Body (JSON)**\n\n| Param | Type | Required | Example |\n|---|---|---|---|\n| `email` | string (email) | yes | `admin@shop.test` |\n| `password` | string | yes | `password` |\n\nSeeded admin: `admin@shop.test` / `password`."
           }
         },
         {
@@ -68,7 +70,8 @@
               "mode": "raw",
               "raw": "{\n  \"email\": \"customer@shop.test\",\n  \"password\": \"password\"\n}"
             },
-            "url": "{{base_url}}/api/login"
+            "url": "{{base_url}}/api/login",
+            "description": "Public. Saves `token` on success.\n\n**Body (JSON)**\n\n| Param | Type | Required | Example |\n|---|---|---|---|\n| `email` | string (email) | yes | `customer@shop.test` |\n| `password` | string | yes | `password` |\n\nSeeded customer: `customer@shop.test` / `password`."
           }
         },
         {
@@ -83,7 +86,8 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"New Customer\",\n  \"email\": \"new@shop.test\",\n  \"password\": \"Shop@1234\",\n  \"password_confirmation\": \"Shop@1234\"\n}"
             },
-            "url": "{{base_url}}/api/register"
+            "url": "{{base_url}}/api/register",
+            "description": "Public. Creates a customer + empty profile. Role cannot be sent (always customer).\n\n**Body (JSON)**\n\n| Param | Type | Required | Rules | Example |\n|---|---|---|---|---|\n| `name` | string | yes | max 255 | `New Customer` |\n| `email` | string (email) | yes | unique | `new@shop.test` |\n| `password` | string | yes | min 8, mixed case, number, symbol | `Shop@1234` |\n| `password_confirmation` | string | yes | must match `password` | `Shop@1234` |"
           }
         },
         {
@@ -94,7 +98,8 @@
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/api/me"
+            "url": "{{base_url}}/api/me",
+            "description": "Auth required. No query/body params. Returns the logged-in user + profile."
           }
         },
         {
@@ -105,7 +110,8 @@
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/api/logout"
+            "url": "{{base_url}}/api/logout",
+            "description": "Auth required. No query/body params. Deletes the current Sanctum token."
           }
         }
       ]
@@ -118,21 +124,21 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              { "key": "Accept", "value": "application/json" }
             ],
             "url": {
               "raw": "{{base_url}}/api/categories?page=1&per_page=10&sort=name&search=&is_active=1",
               "host": ["{{base_url}}"],
               "path": ["api", "categories"],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "per_page", "value": "10" },
-                { "key": "sort", "value": "name" },
-                { "key": "search", "value": "" },
-                { "key": "is_active", "value": "1" }
+                { "key": "page", "value": "1", "description": "integer ≥ 1. Default 1. Example: 1" },
+                { "key": "per_page", "value": "10", "description": "integer 1–50. Default 10. Example: 10" },
+                { "key": "sort", "value": "name", "description": "string. Allowed: id, name, created_at, updated_at. Prefix `-` for DESC. Examples: name  |  -created_at" },
+                { "key": "search", "value": "", "description": "string, max 120. Matches name or slug. Example: electronics. Leave empty to skip." },
+                { "key": "is_active", "value": "1", "description": "boolean. Use 1/true for active, 0/false for inactive. Leave empty to skip filter." }
               ]
-            }
+            },
+            "description": "Public. Query params only (no JSON body).\n\n**Query params**\n\n| Param | Type | Required | Allowed / example |\n|---|---|---|---|\n| `page` | integer ≥ 1 | no | `1` |\n| `per_page` | integer 1–50 | no | `10` |\n| `sort` | string | no | `id`, `name`, `created_at`, `updated_at`, or `-created_at` |\n| `search` | string max 120 | no | `electronics` |\n| `is_active` | boolean | no | `1` / `0` / `true` / `false` |"
           }
         },
         {
@@ -146,9 +152,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Gadgets\",\n  \"description\": \"Admin-only create\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"name\": \"Gadgets\",\n  \"slug\": \"gadgets\",\n  \"description\": \"Admin-only create\",\n  \"is_active\": true\n}"
             },
-            "url": "{{base_url}}/api/categories"
+            "url": "{{base_url}}/api/categories",
+            "description": "Admin + Bearer token. JSON body.\n\n**Body (JSON)**\n\n| Param | Type | Required | Rules | Example |\n|---|---|---|---|---|\n| `name` | string | **yes** | max 120 | `Gadgets` |\n| `slug` | string | no | max 140, unique. Auto from name if omitted | `gadgets` |\n| `description` | string | no | | `Admin-only create` |\n| `is_active` | boolean | no | default `true` if omitted | `true` |"
           }
         },
         {
@@ -156,10 +163,14 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              { "key": "Accept", "value": "application/json" }
             ],
-            "url": "{{base_url}}/api/categories/{{category_id}}"
+            "url": {
+              "raw": "{{base_url}}/api/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "{{category_id}}"]
+            },
+            "description": "Public. Path param only.\n\n| Param | Type | Required | Where | Example |\n|---|---|---|---|---|\n| `category_id` | integer (existing category id) | yes | URL path | `1` |\n\nSet collection variable `category_id` or replace in the URL."
           }
         },
         {
@@ -173,9 +184,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Gadgets Updated\"\n}"
+              "raw": "{\n  \"name\": \"Gadgets Updated\",\n  \"slug\": \"gadgets-updated\",\n  \"description\": \"Updated description\",\n  \"is_active\": true\n}"
             },
-            "url": "{{base_url}}/api/categories/{{category_id}}"
+            "url": {
+              "raw": "{{base_url}}/api/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "{{category_id}}"]
+            },
+            "description": "Admin + Bearer token. Method: **PUT**. Send only fields you want to change.\n\n**Path**\n\n| Param | Type | Example |\n|---|---|---|\n| `category_id` | integer | `1` |\n\n**Body (JSON) — all optional on update (`sometimes`)**\n\n| Param | Type | Rules | Example |\n|---|---|---|---|\n| `name` | string | max 120 | `Gadgets Updated` |\n| `slug` | string | max 140, unique | `gadgets-updated` |\n| `description` | string | | `Updated description` |\n| `is_active` | boolean | `true` / `false` | `true` |"
           }
         },
         {
@@ -186,7 +202,12 @@
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/api/categories/{{category_id}}"
+            "url": {
+              "raw": "{{base_url}}/api/categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "categories", "{{category_id}}"]
+            },
+            "description": "Admin + Bearer token. No body.\n\n| Param | Type | Where | Example |\n|---|---|---|---|\n| `category_id` | integer | URL path | `1` |\n\nFails if products are still linked to this category."
           }
         }
       ]
@@ -199,24 +220,24 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              { "key": "Accept", "value": "application/json" }
             ],
             "url": {
               "raw": "{{base_url}}/api/products?page=1&per_page=2&sort=-price&search=&category_id=&min_price=&max_price=&is_active=1",
               "host": ["{{base_url}}"],
               "path": ["api", "products"],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "per_page", "value": "2" },
-                { "key": "sort", "value": "-price", "description": "field or -field for DESC" },
-                { "key": "search", "value": "", "description": "name or sku" },
-                { "key": "category_id", "value": "", "description": "filter products linked to this category" },
-                { "key": "min_price", "value": "" },
-                { "key": "max_price", "value": "" },
-                { "key": "is_active", "value": "1" }
+                { "key": "page", "value": "1", "description": "integer ≥ 1. Default 1. Example: 1" },
+                { "key": "per_page", "value": "2", "description": "integer 1–50. Default 10. Example: 2" },
+                { "key": "sort", "value": "-price", "description": "string. Allowed: id, name, price, stock, created_at, updated_at. Prefix `-` for DESC. Examples: price  |  -price  |  -created_at" },
+                { "key": "search", "value": "", "description": "string, max 120. Matches product name or sku. Example: mouse. Leave empty to skip." },
+                { "key": "category_id", "value": "", "description": "integer, must exist in categories.id. Filter products linked to this ONE category. Example: 1. Not the same as category_ids." },
+                { "key": "min_price", "value": "", "description": "number ≥ 0. Example: 100" },
+                { "key": "max_price", "value": "", "description": "number ≥ 0. Example: 2000" },
+                { "key": "is_active", "value": "1", "description": "boolean. 1/true = active products only. 0/false = inactive. Leave empty to skip." }
               ]
-            }
+            },
+            "description": "Public. Query params only (no JSON body).\n\n**Query params**\n\n| Param | Type | Required | Notes | Example |\n|---|---|---|---|---|\n| `page` | integer ≥ 1 | no | | `1` |\n| `per_page` | integer 1–50 | no | default 10 | `10` |\n| `sort` | string | no | `id`, `name`, `price`, `stock`, `created_at`, `updated_at`; `-` = DESC | `-price` |\n| `search` | string max 120 | no | name or sku | `WH-100` |\n| `category_id` | integer | no | **singular** — list filter only | `1` |\n| `min_price` | number ≥ 0 | no | | `100` |\n| `max_price` | number ≥ 0 | no | | `2000` |\n| `is_active` | boolean | no | `1` / `0` / `true` / `false` | `1` |"
           }
         },
         {
@@ -230,28 +251,31 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "name", "value": "Demo Mouse", "type": "text" },
-                { "key": "sku", "value": "MSE-AUTH-01", "type": "text" },
-                { "key": "price", "value": "799", "type": "text" },
-                { "key": "stock", "value": "25", "type": "text" },
-                { "key": "category_ids[0]", "value": "1", "type": "text" },
-                { "key": "category_ids[1]", "value": "2", "type": "text" },
+                { "key": "name", "value": "Demo Mouse", "type": "text", "description": "string, required, max 160. Example: Demo Mouse" },
+                { "key": "sku", "value": "MSE-AUTH-01", "type": "text", "description": "string, required, max 60, unique. Example: MSE-AUTH-01" },
+                { "key": "slug", "value": "", "type": "text", "description": "string, optional, max 180, unique. Auto from name if empty." },
+                { "key": "description", "value": "Wireless mouse", "type": "text", "description": "string, optional." },
+                { "key": "price", "value": "799", "type": "text", "description": "number ≥ 0, required. Example: 799" },
+                { "key": "stock", "value": "25", "type": "text", "description": "integer ≥ 0, required. Example: 25" },
+                { "key": "is_active", "value": "1", "type": "text", "description": "boolean, optional. 1/true or 0/false. Default true." },
+                { "key": "category_ids[0]", "value": "1", "type": "text", "description": "integer, required array. Must exist in categories.id. Spelling is category_ids (plural), not category_id or tag_ids." },
+                { "key": "category_ids[1]", "value": "2", "type": "text", "description": "second category id. Add more as category_ids[2], …" },
                 {
                   "key": "image",
-                  "description": "optional jpg/jpeg/png/webp, max 2MB",
+                  "description": "file, optional. jpg/jpeg/png/webp, max 2048 KB (2MB). Use form-data, do not set Content-Type manually.",
                   "type": "file",
                   "src": []
                 }
               ]
             },
             "url": "{{base_url}}/api/products",
-            "description": "Image is optional on create. Use form-data (not raw JSON) when sending a file. Do not set Content-Type manually."
+            "description": "Admin + Bearer token. Use **form-data** (not raw JSON) if sending an image.\n\n**Body**\n\n| Param | Type | Required | Rules | Example |\n|---|---|---|---|---|\n| `name` | string | **yes** | max 160 | `Demo Mouse` |\n| `sku` | string | **yes** | max 60, unique | `MSE-AUTH-01` |\n| `slug` | string | no | max 180, unique; auto from name | `demo-mouse` |\n| `description` | string | no | | `Wireless mouse` |\n| `price` | number | **yes** | ≥ 0 | `799` |\n| `stock` | integer | **yes** | ≥ 0 | `25` |\n| `is_active` | boolean | no | default true | `1` |\n| `category_ids` | array of integers | **yes** | min 1, each must exist | `category_ids[0]=1` |\n| `image` | file | no | jpg/jpeg/png/webp, max 2MB | pick a file |\n\nWrong: `category_id`, `tag_ids`.\nRight: `category_ids`."
           }
         },
         {
           "name": "Update product (admin)",
           "request": {
-            "method": "POST",
+            "method": "PUT",
             "header": [
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
@@ -259,20 +283,29 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "_method", "value": "PUT", "type": "text" },
-                { "key": "name", "value": "Demo Mouse Updated", "type": "text" },
-                { "key": "price", "value": "899", "type": "text" },
-                { "key": "remove_image", "value": "0", "type": "text", "description": "set 1 to delete image without uploading a new one" },
+                { "key": "name", "value": "Demo Mouse Updated", "type": "text", "description": "string, optional on update, max 160." },
+                { "key": "sku", "value": "", "type": "text", "description": "string, optional on update, max 60, unique. Leave empty to keep current." },
+                { "key": "slug", "value": "", "type": "text", "description": "string, optional, max 180, unique." },
+                { "key": "description", "value": "", "type": "text", "description": "string, optional." },
+                { "key": "price", "value": "899", "type": "text", "description": "number ≥ 0, optional on update." },
+                { "key": "stock", "value": "", "type": "text", "description": "integer ≥ 0, optional on update." },
+                { "key": "is_active", "value": "1", "type": "text", "description": "boolean, optional. 1/true or 0/false." },
+                { "key": "category_ids[0]", "value": "1", "type": "text", "description": "array of integers, optional on update. If sent, must have min 1 existing category id." },
+                { "key": "remove_image", "value": "0", "type": "text", "description": "boolean. 1/true deletes current image without uploading a new one. 0/false keeps it." },
                 {
                   "key": "image",
-                  "description": "optional — new file replaces the old image",
+                  "description": "file, optional. jpg/jpeg/png/webp, max 2MB. Replaces the previous image.",
                   "type": "file",
                   "src": []
                 }
               ]
             },
-            "url": "{{base_url}}/api/products/{{product_id}}",
-            "description": "PHP cannot send files on real PUT. Postman uses POST + _method=PUT so Laravel still hits the PUT update route. New image replaces the previous file; remove_image=1 clears it."
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            },
+            "description": "Admin + Bearer token. Method: **PUT** `/api/products/{product_id}`.\nUse form-data when uploading an image. Send only fields you want to change.\n\n**Path**\n\n| Param | Type | Example |\n|---|---|---|\n| `product_id` | integer | `1` |\n\n**Body (all optional on update)**\n\n| Param | Type | Rules | Example |\n|---|---|---|---|\n| `name` | string | max 160 | `Demo Mouse Updated` |\n| `sku` | string | max 60, unique | `MSE-AUTH-01` |\n| `slug` | string | max 180, unique | `demo-mouse-updated` |\n| `description` | string | | `Updated text` |\n| `price` | number ≥ 0 | | `899` |\n| `stock` | integer ≥ 0 | | `20` |\n| `is_active` | boolean | | `1` |\n| `category_ids` | array of integers | if sent, min 1 existing ids | `category_ids[0]=1` |\n| `image` | file | jpg/jpeg/png/webp, max 2MB | pick a file |\n| `remove_image` | boolean | `1` clears image | `0` |"
           }
         },
         {
@@ -280,10 +313,14 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              { "key": "Accept", "value": "application/json" }
             ],
-            "url": "{{base_url}}/api/products/{{product_id}}"
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            },
+            "description": "Public. Path param only.\n\n| Param | Type | Where | Example |\n|---|---|---|---|\n| `product_id` | integer (existing product id) | URL path | `1` |"
           }
         },
         {
@@ -299,7 +336,12 @@
               "mode": "raw",
               "raw": "{\n  \"category_ids\": [1, 3]\n}"
             },
-            "url": "{{base_url}}/api/products/{{product_id}}/categories"
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}", "categories"]
+            },
+            "description": "Admin + Bearer token. Replaces the product’s category links.\n\n**Path**\n\n| Param | Type | Example |\n|---|---|---|\n| `product_id` | integer | `1` |\n\n**Body (JSON)**\n\n| Param | Type | Required | Rules | Example |\n|---|---|---|---|---|\n| `category_ids` | array of integers | **yes** | min 1, each must exist in `categories.id` | `[1, 3]` |\n\nWrong: `category_id`, `tag_ids`."
           }
         },
         {
@@ -310,7 +352,12 @@
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/api/products/{{product_id}}"
+            "url": {
+              "raw": "{{base_url}}/api/products/{{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "{{product_id}}"]
+            },
+            "description": "Admin + Bearer token. No body.\n\n| Param | Type | Where | Example |\n|---|---|---|---|\n| `product_id` | integer | URL path | `1` |\n\nFails if the product appears on existing orders."
           }
         }
       ]
@@ -345,7 +392,7 @@
               "raw": "{\n  \"items\": [\n    { \"product_id\": 1, \"quantity\": 1 },\n    { \"product_id\": 2, \"quantity\": 2 }\n  ]\n}"
             },
             "url": "{{base_url}}/api/orders",
-            "description": "Uses OrderService: transaction, stock lock, line snapshots, totals. Shipping address is copied from the customer profile (seeded for customer@shop.test)."
+            "description": "Customer + Bearer token. Shipping address is copied from the user profile (seeded for `customer@shop.test`).\n\n**Body (JSON)**\n\n| Param | Type | Required | Rules | Example |\n|---|---|---|---|---|\n| `items` | array | **yes** | min 1 item | see below |\n| `items[].product_id` | integer | **yes** | must exist in `products.id` | `1` |\n| `items[].quantity` | integer | **yes** | 1–100 | `2` |\n\nExample:\n```json\n{\n  \"items\": [\n    { \"product_id\": 1, \"quantity\": 1 },\n    { \"product_id\": 2, \"quantity\": 2 }\n  ]\n}\n```"
           }
         },
         {
@@ -356,7 +403,16 @@
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/api/orders?page=1&per_page=10"
+            "url": {
+              "raw": "{{base_url}}/api/orders?page=1&per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"],
+              "query": [
+                { "key": "page", "value": "1", "description": "integer ≥ 1. Default 1." },
+                { "key": "per_page", "value": "10", "description": "integer 1–50. Default 10." }
+              ]
+            },
+            "description": "Auth required. Customer sees own orders; admin sees all.\n\n**Query params**\n\n| Param | Type | Required | Example |\n|---|---|---|---|\n| `page` | integer ≥ 1 | no | `1` |\n| `per_page` | integer 1–50 | no | `10` |"
           }
         },
         {
@@ -367,7 +423,12 @@
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/api/orders/{{order_id}}"
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders", "{{order_id}}"]
+            },
+            "description": "Auth required. Path param only.\n\n| Param | Type | Where | Example |\n|---|---|---|---|\n| `order_id` | integer | URL path | `1` |"
           }
         }
       ]
@@ -383,8 +444,16 @@
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/api/notifications",
-            "description": "After Place order, run `./bin/artisan queue:work --once` (or leave worker running). Customer sees order_placed; admin sees low_stock when stock ≤ 10."
+            "url": {
+              "raw": "{{base_url}}/api/notifications?page=1&per_page=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "page", "value": "1", "description": "integer ≥ 1. Default 1." },
+                { "key": "per_page", "value": "10", "description": "integer 1–50. Default 10." }
+              ]
+            },
+            "description": "Auth required. After Place order, queue worker sends notifications.\n\n**Query params**\n\n| Param | Type | Required | Example |\n|---|---|---|---|\n| `page` | integer ≥ 1 | no | `1` |\n| `per_page` | integer 1–50 | no | `10` |"
           }
         },
         {
@@ -395,7 +464,24 @@
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/api/notifications/read-all"
+            "url": "{{base_url}}/api/notifications/read-all",
+            "description": "Auth required. No query/body params."
+          }
+        },
+        {
+          "name": "Mark one notification read",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/notifications/{{notification_id}}/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "notifications", "{{notification_id}}", "read"]
+            },
+            "description": "Auth required. No body.\n\n| Param | Type | Where | Example |\n|---|---|---|---|\n| `notification_id` | string (UUID from list response `id`) | URL path | paste from List my notifications |"
           }
         }
       ]
