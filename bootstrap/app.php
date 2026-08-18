@@ -32,7 +32,7 @@ return Application::configure(dirname(__DIR__))
             return $request->is('api/*') || $request->expectsJson();
         });
 
-        $exceptions->render(function ($e, Request $request) {
+        $exceptions->render(function (Throwable $e, Request $request) {
             return ApiErrorResponse::fromThrowable($e, $request);
         });
     })->create();
