@@ -6,7 +6,7 @@ use App\Interfaces\Product\ProductRepositoryInterface;
 use App\Models\Product;
 use App\Helper\ApiListHelper;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\Request;
+
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -44,15 +44,11 @@ class ProductRepository implements ProductRepositoryInterface
             $builder->where('price', '<=', $filters['max_price']);
         }
 
-        $sortRequest = Request::create('/', 'GET', [
-            'sort' => $filters['sort'] ?? null,
-        ]);
-
         ApiListHelper::applySort(
             $builder,
-            $sortRequest,
+            $filters['sort'] ?? '',
+            $filters['sort_direction'] ?? '',
             ['id', 'name', 'price', 'stock', 'created_at', 'updated_at'],
-            '-created_at'
         );
 
         return $builder->paginate($perPage);

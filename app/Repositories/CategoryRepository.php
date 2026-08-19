@@ -6,7 +6,7 @@ use App\Interfaces\Category\CategoryRepositoryInterface;
 use App\Models\Category;
 use App\Helper\ApiListHelper;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\Request;
+
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
@@ -29,15 +29,11 @@ class CategoryRepository implements CategoryRepositoryInterface
             $builder->where('is_active', filter_var($filters['is_active'], FILTER_VALIDATE_BOOLEAN));
         }
 
-        $sortRequest = Request::create('/', 'GET', [
-            'sort' => $filters['sort'] ?? null,
-        ]);
-
         ApiListHelper::applySort(
             $builder,
-            $sortRequest,
+            $filters['sort'] ?? '',
+            $filters['sort_direction'] ?? '',
             ['id', 'name', 'created_at', 'updated_at'],
-            '-created_at'
         );
 
         return $builder->paginate($perPage);

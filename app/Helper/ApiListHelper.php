@@ -9,26 +9,23 @@ class ApiListHelper
 {
     /**
      * Apply whitelist sorting.
-     * Examples: sort=price  |  sort=-created_at
      *
      * @param  array<int, string>  $allowed
      */
-    public static function applySort(Builder $builder, Request $request, array $allowed, string $default = '-created_at'): Builder
-    {
-        $sort = (string) $request->input('sort', $default);
-        $direction = 'asc';
+    public static function applySort(
+        Builder $builder,
+        string $sortColumn,
+        string $sortDirection,
+        array $allowed,
+        string $defaultColumn = 'created_at',
+        string $defaultDirection = 'asc',
+    ): Builder {
+        $column = in_array($sortColumn, $allowed, true) ? $sortColumn : $defaultColumn;
+        $direction = in_array(strtolower($sortDirection), ['asc', 'desc'], true)
+            ? strtolower($sortDirection)
+            : $defaultDirection;
 
-        if (str_starts_with($sort, '-')) {
-            $direction = 'desc';
-            $sort = substr($sort, 1);
-        }
-
-        if (! in_array($sort, $allowed, true)) {
-            $sort = ltrim($default, '-');
-            $direction = str_starts_with($default, '-') ? 'desc' : 'asc';
-        }
-
-        return $builder->orderBy($sort, $direction);
+        return $builder->orderBy($column, $direction);
     }
 
     /**

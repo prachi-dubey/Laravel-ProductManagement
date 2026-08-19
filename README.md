@@ -45,7 +45,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 | **Form request validation** | 7 custom request classes (`RegisterRequest`, `LoginRequest`, `SaveCategoryRequest`, `SaveProductRequest`, `StoreOrderRequest`, etc.) with shared rule traits (`IndexQueryRules`, `CategoryIdsRules`) |
 | **API resources** | `AuthResource`, `UserResource`, `ProfileResource`, `ProductResource`, `CategoryResource`, `OrderResource`, `OrderItemResource` for consistent response transformation |
 | **Standardized API responses** | Base controller `success()` and `paginated()` helpers, `ApiErrorResponse` helper, and a single `ApiException` class — every response follows `{ "success": true/false, "message": "...", "data": {} }` |
-| **Pagination & sorting helper** | `ApiListHelper` handles `sort`, `per_page`, and paginated payload formatting |
+| **Pagination & sorting helper** | `ApiListHelper` handles `sort`, `sort_direction`, `per_page`, and paginated payload formatting |
 | **Localized messages** | `lang/en/messages.php` — all user-facing API messages in one place |
 | **Database seeder** | `ShopDemoSeeder` creates demo admin + customer users with profiles, 3 categories, 6 products, and a sample order (idempotent with `updateOrCreate`) |
 | **Docker setup** | Custom `Dockerfile` (PHP-FPM), Nginx config, entrypoint script, and `docker-compose.yml` with 5 services. `start.sh` handles first-run setup |

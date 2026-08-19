@@ -15,6 +15,7 @@ trait IndexQueryRules
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
             'sort' => ['sometimes', 'string'],
+            'sort_direction' => ['sometimes', 'string', 'in:asc,desc,ASC,DESC,Asc,Desc'],
             'search' => ['sometimes', 'nullable', 'string', 'max:120'],
             'is_active' => ['sometimes', 'nullable', 'boolean'],
         ];
