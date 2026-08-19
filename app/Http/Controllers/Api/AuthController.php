@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
+use App\Http\Requests\Api\Auth\UpdateProfileRequest;
 use App\Http\Resources\Api\Auth\AuthResource;
 use App\Http\Resources\Api\Auth\UserResource;
 use App\Services\AuthService;
@@ -56,6 +57,16 @@ class AuthController extends Controller
 
         return $this->success(
             __('messages.auth.me_retrieved'),
+            new UserResource($user)
+        );
+    }
+
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    {
+        $user = $this->auth->updateProfile($request->user(), $request->validated());
+
+        return $this->success(
+            __('messages.auth.profile_updated'),
             new UserResource($user)
         );
     }

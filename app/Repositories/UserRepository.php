@@ -24,6 +24,17 @@ class UserRepository implements UserRepositoryInterface
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     */
+    public function updateProfile(User $user, array $data): User
+    {
+        $profile = $user->profile ?? $user->profile()->create([]);
+        $profile->update($data);
+
+        return $user->load('profile');
+    }
+
+    /**
      * @param  list<string>  $relations
      */
     public function loadRelations(User $user, array $relations = ['profile']): User

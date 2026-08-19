@@ -14,6 +14,11 @@ interface UserRepositoryInterface
     public function findByEmail(string $email): ?User;
 
     /**
+     * @param  array<string, mixed>  $data
+     */
+    public function updateProfile(User $user, array $data): User;
+
+    /**
      * @param  list<string>  $relations
      */
     public function loadRelations(User $user, array $relations = ['profile']): User;

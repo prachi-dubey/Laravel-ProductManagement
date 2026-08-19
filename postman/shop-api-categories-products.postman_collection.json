@@ -103,6 +103,23 @@
           }
         },
         {
+          "name": "Update profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+919876543210\",\n  \"bio\": \"Laravel developer\",\n  \"line1\": \"123 Main Street\",\n  \"line2\": \"Apt 4B\",\n  \"city\": \"Indore\",\n  \"state\": \"MP\",\n  \"postal_code\": \"452001\",\n  \"country\": \"IN\"\n}"
+            },
+            "url": "{{base_url}}/api/profile",
+            "description": "Auth required. Updates the logged-in user's profile (shipping address, phone, bio). Send only fields you want to change.\n\n**Body (JSON) — all optional**\n\n| Param | Type | Max | Example |\n|---|---|---|---|\n| `phone` | string | 30 | `+919876543210` |\n| `bio` | string | — | `Laravel developer` |\n| `line1` | string | 255 | `123 Main Street` |\n| `line2` | string | 255 | `Apt 4B` |\n| `city` | string | 80 | `Indore` |\n| `state` | string | 80 | `MP` |\n| `postal_code` | string | 20 | `452001` |\n| `country` | string | 2 | `IN` |\n\n**Required for placing orders:** `line1`, `city`, `postal_code`, `country`."
+          }
+        },
+        {
           "name": "Logout",
           "request": {
             "method": "POST",

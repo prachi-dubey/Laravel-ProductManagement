@@ -9,6 +9,7 @@ return [
         'me_retrieved' => 'Authenticated user retrieved.',
         'credentials_invalid' => 'The provided credentials are incorrect.',
         'admin_required' => 'Admin access required.',
+        'profile_updated' => 'Profile updated successfully.',
     ],
 
     'products' => [

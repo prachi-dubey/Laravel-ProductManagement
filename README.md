@@ -32,7 +32,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 
 | Feature | What we built |
 |---------|--------------|
-| **Authentication** | Custom `AuthController` + `AuthService` — register (creates customer role + profile), login (manual credential check, returns Sanctum token), logout (revokes token), me (current user info) |
+| **Authentication** | Custom `AuthController` + `AuthService` — register (creates customer role + profile), login (manual credential check, returns Sanctum token), logout (revokes token), me (current user info), update profile (shipping address, phone, bio) |
 | **Role-Based Access Control** | Two roles (`admin`, `customer`). Custom `EnsureUserIsAdmin` middleware restricts admin routes. Policies (`OrderPolicy`, `ProductPolicy`, `CategoryPolicy`) control per-resource authorization |
 | **Categories (CRUD)** | `CategoryController` + `CategoryService` + `CategoryRepository` — create, read, update, delete categories. Public listing with pagination, sorting, and search |
 | **Products (CRUD)** | `ProductController` + `ProductService` + `ProductRepository` — full CRUD with SKU, price, stock tracking, and many-to-many category sync (`PUT /products/{id}/categories`) |
@@ -42,7 +42,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 | **Notification management API** | `NotificationController` — list notifications, mark one as read, mark all as read |
 | **Repository pattern** | Interfaces + implementations for User, Product, Category, and Order repositories, bound in the service container |
 | **Service layer** | `AuthService`, `ProductService`, `CategoryService`, `OrderService` encapsulate business logic away from controllers |
-| **Form request validation** | 7 custom request classes (`RegisterRequest`, `LoginRequest`, `SaveCategoryRequest`, `SaveProductRequest`, `StoreOrderRequest`, etc.) with shared rule traits (`IndexQueryRules`, `CategoryIdsRules`) |
+| **Form request validation** | 8 custom request classes (`RegisterRequest`, `LoginRequest`, `UpdateProfileRequest`, `SaveCategoryRequest`, `SaveProductRequest`, `StoreOrderRequest`, etc.) with shared rule traits (`IndexQueryRules`, `CategoryIdsRules`) |
 | **API resources** | `AuthResource`, `UserResource`, `ProfileResource`, `ProductResource`, `CategoryResource`, `OrderResource`, `OrderItemResource` for consistent response transformation |
 | **Standardized API responses** | Base controller `success()` and `paginated()` helpers, `ApiErrorResponse` helper, and a single `ApiException` class — every response follows `{ "success": true/false, "message": "...", "data": {} }` |
 | **Pagination & sorting helper** | `ApiListHelper` handles `sort`, `sort_direction`, `per_page`, and paginated payload formatting |
@@ -72,6 +72,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 - **Register** — creates a new customer account with a profile, returns an API token
 - **Login** — validates credentials, returns a bearer token for subsequent requests
 - **Logout** — revokes the current token
+- **Update profile** — update shipping address, phone, and bio via `PUT /api/profile` (required before placing an order)
 - **Role check** — admin routes are protected by custom middleware; resource-level access is controlled by policies
 
 ### 2. Category Management
@@ -88,6 +89,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 
 ### 4. Order Processing
 
+- Customers must first update their profile with a shipping address (`PUT /api/profile`) before placing an order
 - Customers submit an order with a list of products and quantities
 - The service validates that sufficient stock exists for every item
 - Stock is decremented and the order is created inside a database transaction
@@ -135,6 +137,7 @@ List endpoints include pagination metadata (current page, total, per page, etc.)
 | POST | `/api/login` | No | — | Get auth token |
 | POST | `/api/logout` | Yes | Any | Revoke token |
 | GET | `/api/me` | Yes | Any | Current user info |
+| PUT | `/api/profile` | Yes | Any | Update profile (address, phone, bio) |
 | GET | `/api/categories` | No | — | List categories |
 | GET | `/api/categories/{id}` | No | — | View category |
 | POST | `/api/categories` | Yes | Admin | Create category |
@@ -291,6 +294,33 @@ Import `postman/shop-api-categories-products.postman_collection.json` and set:
 
 - `base_url` → `http://localhost:84`
 - `token` → value from login response
+
+---
+
+## Email Setup (Gmail SMTP)
+
+By default emails are written to `storage/logs/laravel.log` (`MAIL_MAILER=log`). To send real emails to customers on order placement:
+
+1. Enable **2-Step Verification** on your Google account at https://myaccount.google.com/security
+2. Generate an **App Password** at https://myaccount.google.com/apppasswords (select "Mail" → "Other", name it "Shop API")
+3. Update your `.env`:
+
+```text
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD="your-16-char-app-password"
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=your-email@gmail.com
+MAIL_FROM_NAME="Shop API"
+```
+
+> **Important:** Wrap the App Password in double quotes if it contains spaces.
+
+4. Restart Docker: `docker compose down && docker compose up -d --build`
+
+After this, order confirmation emails are sent from your Gmail to the customer's registered email, and low-stock alerts are sent to all admin users.
 
 ---
 

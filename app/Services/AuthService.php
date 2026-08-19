@@ -68,6 +68,14 @@ class AuthService
     }
 
     /**
+     * @param  array<string, mixed>  $data
+     */
+    public function updateProfile(User $user, array $data): User
+    {
+        return $this->users->updateProfile($user, $data);
+    }
+
+    /**
      * @return array{user: User, token: string}
      */
     private function tokenPayload(User $user): array
