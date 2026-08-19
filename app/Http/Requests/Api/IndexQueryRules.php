@@ -15,7 +15,7 @@ trait IndexQueryRules
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
             'sort' => ['sometimes', 'string'],
-            'sort_direction' => ['sometimes', 'string', 'in:asc,desc,ASC,DESC,Asc,Desc'],
+            'sort_direction' => ['sometimes', 'string', 'in:asc,desc'],
             'search' => ['sometimes', 'nullable', 'string', 'max:120'],
             'is_active' => ['sometimes', 'nullable', 'boolean'],
         ];
@@ -23,6 +23,12 @@ trait IndexQueryRules
 
     protected function prepareIndexBooleanFilters(): void
     {
+        if ($this->has('sort_direction')) {
+            $this->merge([
+                'sort_direction' => strtolower((string) $this->query('sort_direction')),
+            ]);
+        }
+
         if ($this->has('is_active')) {
             $this->merge([
                 'is_active' => filter_var($this->query('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
