@@ -9,7 +9,7 @@ Shop API is a backend-only e-commerce application that exposes a JSON API for:
 - **User registration and authentication** with token-based access (Sanctum)
 - **Product and category management** with a many-to-many relationship (a product can belong to multiple categories)
 - **Order placement** with stock validation, automatic inventory decrement, and order number generation
-- **Queued notifications** — order confirmations (to customers) and low-stock alerts (to admins) via email and database channels
+- **Queued email notifications** — order confirmations (to customers) and low-stock alerts (to admins) via email
 - **Role-based access** — Admin and Customer roles with policy-based authorization
 
 The entire stack runs in Docker, so there is nothing to install locally beyond Docker itself.
@@ -38,8 +38,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 | **Products (CRUD)** | `ProductController` + `ProductService` + `ProductRepository` — full CRUD with SKU, price, stock tracking, and many-to-many category sync (`PUT /products/{id}/categories`) |
 | **Orders** | `OrderController` + `OrderService` + `OrderRepository` — customers place orders with line items; the service validates stock, decrements inventory inside a DB transaction, generates an order number, and fires an `OrderPlaced` event |
 | **Order event pipeline** | `OrderPlaced` event → two listeners: `SendOrderConfirmation` (dispatches `SendOrderConfirmationJob`) and `QueueLowStockCheck` (dispatches `CheckLowStockJob`). Both jobs are queued |
-| **Notifications** | Two custom Laravel notifications: `OrderPlacedNotification` (sent to the customer with order details) and `LowStockNotification` (sent to all admins when a product's stock drops below 10). Both use `mail` + `database` channels |
-| **Notification management API** | `NotificationController` — list notifications |
+| **Email notifications** | Two custom Laravel notifications: `OrderPlacedNotification` (sent to the customer with order details) and `LowStockNotification` (sent to all admins when a product's stock drops below 10). Both use the `mail` channel |
 | **Repository pattern** | Interfaces + implementations for User, Product, Category, and Order repositories, bound in the service container |
 | **Service layer** | `AuthService`, `ProductService`, `CategoryService`, `OrderService` encapsulate business logic away from controllers |
 | **Form request validation** | 8 custom request classes (`RegisterRequest`, `LoginRequest`, `UpdateProfileRequest`, `SaveCategoryRequest`, `SaveProductRequest`, `StoreOrderRequest`, etc.) with shared rule traits (`IndexQueryRules`, `CategoryIdsRules`) |
@@ -55,7 +54,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 | Feature | What Laravel provides |
 |---------|----------------------|
 | Sanctum token engine | Token creation, hashing, `auth:sanctum` middleware guard |
-| Notification system | `Notifiable` trait, `mail` + `database` channels, `notifications` table |
+| Notification system | `Notifiable` trait, `mail` channel |
 | Queue system | Job dispatching, `database` queue driver, `queue:work` command |
 | Event system | `Event` + `Listener` wiring and dispatch |
 | Eloquent ORM | Models, relationships, migrations, transactions |
@@ -108,10 +107,8 @@ cancelled cancelled
 
 When an order is placed, two queued jobs run:
 
-1. **Order confirmation** — sends the customer an email and stores a database notification with order details
-2. **Low-stock alert** — if any ordered product's stock drops below 10, all admin users are notified via email and database
-
-Users can list their notifications through the API.
+1. **Order confirmation** — sends the customer an email with order details
+2. **Low-stock alert** — if any ordered product's stock drops below 10, all admin users are notified via email
 
 ### 6. Standardized API Responses
 
@@ -152,7 +149,6 @@ List endpoints include pagination metadata (current page, total, per page, etc.)
 | GET | `/api/orders` | Yes | Any | List orders |
 | GET | `/api/orders/{id}` | Yes | Any | View order |
 | POST | `/api/orders` | Yes | Customer | Place order |
-| GET | `/api/notifications` | Yes | Any | List notifications |
 
 ---
 
@@ -177,7 +173,7 @@ app/
 ├── Events/Order/             # OrderPlaced event
 ├── Exceptions/               # ApiException
 ├── Helper/                   # ApiErrorResponse, ApiListHelper
-├── Http/Controllers/Api/     # Auth, Category, Product, Order, Notification
+├── Http/Controllers/Api/     # Auth, Category, Product, Order
 ├── Http/Middleware/           # EnsureUserIsAdmin
 ├── Http/Requests/Api/        # Form requests per domain
 ├── Http/Resources/Api/       # API resources per domain

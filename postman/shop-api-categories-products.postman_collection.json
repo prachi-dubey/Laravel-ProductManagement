@@ -9,8 +9,7 @@
     { "key": "token", "value": "" },
     { "key": "category_id", "value": "1" },
     { "key": "product_id", "value": "1" },
-    { "key": "order_id", "value": "1" },
-    { "key": "notification_id", "value": "" }
+    { "key": "order_id", "value": "1" }
   ],
   "item": [
     {
@@ -448,31 +447,6 @@
               "path": ["api", "orders", "{{order_id}}"]
             },
             "description": "Auth required. Path param only.\n\n| Param | Type | Where | Example |\n|---|---|---|---|\n| `order_id` | integer | URL path | `1` |"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Notifications (async)",
-      "item": [
-        {
-          "name": "List my notifications",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/notifications?page=1&per_page=10",
-              "host": ["{{base_url}}"],
-              "path": ["api", "notifications"],
-              "query": [
-                { "key": "page", "value": "1", "description": "integer ≥ 1. Default 1." },
-                { "key": "per_page", "value": "10", "description": "integer 1–50. Default 10." }
-              ]
-            },
-            "description": "Auth required. After Place order, queue worker sends notifications.\n\n**Query params**\n\n| Param | Type | Required | Example |\n|---|---|---|---|\n| `page` | integer ≥ 1 | no | `1` |\n| `per_page` | integer 1–50 | no | `10` |"
           }
         }
       ]

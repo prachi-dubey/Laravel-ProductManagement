@@ -9,7 +9,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Sends order confirmation (mail + database notification) in the background.
+ * Sends order confirmation email in the background.
  */
 class SendOrderConfirmationJob implements ShouldQueue
 {

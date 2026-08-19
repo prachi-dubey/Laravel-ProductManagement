@@ -8,7 +8,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Customer: email (MAIL_MAILER=log locally) + database inbox row.
+ * Customer: email (MAIL_MAILER=log locally).
  * Sent from SendOrderConfirmationJob (already queued).
  */
 class OrderPlacedNotification extends Notification
@@ -28,7 +28,7 @@ class OrderPlacedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail'];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -48,19 +48,5 @@ class OrderPlacedNotification extends Notification
         }
 
         return $mail->line('We will notify you when it ships.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            'type' => 'order_placed',
-            'order_id' => $this->order->id,
-            'order_number' => $this->order->number,
-            'total' => $this->order->total,
-            'message' => 'Your order '.$this->order->number.' was placed successfully.',
-        ];
     }
 }

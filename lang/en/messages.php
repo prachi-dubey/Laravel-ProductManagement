@@ -40,10 +40,6 @@ return [
         'insufficient_stock' => 'Insufficient stock for :name (available: :available).',
     ],
 
-    'notifications' => [
-        'listed' => 'Notifications retrieved successfully.',
-    ],
-
     'errors' => [
         'validation' => 'The given data was invalid.',
         'unauthenticated' => 'Unauthenticated.',
