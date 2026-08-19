@@ -474,34 +474,6 @@
             },
             "description": "Auth required. After Place order, queue worker sends notifications.\n\n**Query params**\n\n| Param | Type | Required | Example |\n|---|---|---|---|\n| `page` | integer ≥ 1 | no | `1` |\n| `per_page` | integer 1–50 | no | `10` |"
           }
-        },
-        {
-          "name": "Mark all notifications read",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "{{base_url}}/api/notifications/read-all",
-            "description": "Auth required. No query/body params."
-          }
-        },
-        {
-          "name": "Mark one notification read",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/notifications/{{notification_id}}/read",
-              "host": ["{{base_url}}"],
-              "path": ["api", "notifications", "{{notification_id}}", "read"]
-            },
-            "description": "Auth required. No body.\n\n| Param | Type | Where | Example |\n|---|---|---|---|\n| `notification_id` | string (UUID from list response `id`) | URL path | paste from List my notifications |"
-          }
         }
       ]
     }

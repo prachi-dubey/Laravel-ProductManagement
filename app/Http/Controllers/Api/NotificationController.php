@@ -30,25 +30,4 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function markRead(Request $request, string $id): JsonResponse
-    {
-        $notification = $request->user()
-            ->notifications()
-            ->where('id', $id)
-            ->firstOrFail();
-
-        $notification->markAsRead();
-
-        return $this->success(
-            __('messages.notifications.marked_read'),
-            $notification->fresh()
-        );
-    }
-
-    public function markAllRead(Request $request): JsonResponse
-    {
-        $request->user()->unreadNotifications->markAsRead();
-
-        return $this->success(__('messages.notifications.all_marked_read'));
-    }
 }

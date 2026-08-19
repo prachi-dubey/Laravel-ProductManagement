@@ -39,7 +39,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 | **Orders** | `OrderController` + `OrderService` + `OrderRepository` — customers place orders with line items; the service validates stock, decrements inventory inside a DB transaction, generates an order number, and fires an `OrderPlaced` event |
 | **Order event pipeline** | `OrderPlaced` event → two listeners: `SendOrderConfirmation` (dispatches `SendOrderConfirmationJob`) and `QueueLowStockCheck` (dispatches `CheckLowStockJob`). Both jobs are queued |
 | **Notifications** | Two custom Laravel notifications: `OrderPlacedNotification` (sent to the customer with order details) and `LowStockNotification` (sent to all admins when a product's stock drops below 10). Both use `mail` + `database` channels |
-| **Notification management API** | `NotificationController` — list notifications, mark one as read, mark all as read |
+| **Notification management API** | `NotificationController` — list notifications |
 | **Repository pattern** | Interfaces + implementations for User, Product, Category, and Order repositories, bound in the service container |
 | **Service layer** | `AuthService`, `ProductService`, `CategoryService`, `OrderService` encapsulate business logic away from controllers |
 | **Form request validation** | 8 custom request classes (`RegisterRequest`, `LoginRequest`, `UpdateProfileRequest`, `SaveCategoryRequest`, `SaveProductRequest`, `StoreOrderRequest`, etc.) with shared rule traits (`IndexQueryRules`, `CategoryIdsRules`) |
@@ -111,7 +111,7 @@ When an order is placed, two queued jobs run:
 1. **Order confirmation** — sends the customer an email and stores a database notification with order details
 2. **Low-stock alert** — if any ordered product's stock drops below 10, all admin users are notified via email and database
 
-Users can list their notifications and mark them as read through the API.
+Users can list their notifications through the API.
 
 ### 6. Standardized API Responses
 
@@ -153,8 +153,6 @@ List endpoints include pagination metadata (current page, total, per page, etc.)
 | GET | `/api/orders/{id}` | Yes | Any | View order |
 | POST | `/api/orders` | Yes | Customer | Place order |
 | GET | `/api/notifications` | Yes | Any | List notifications |
-| POST | `/api/notifications/read-all` | Yes | Any | Mark all read |
-| POST | `/api/notifications/{id}/read` | Yes | Any | Mark one read |
 
 ---
 
