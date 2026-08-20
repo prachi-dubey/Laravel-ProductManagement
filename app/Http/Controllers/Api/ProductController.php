@@ -8,7 +8,6 @@ use App\Http\Requests\Api\Product\SaveProductRequest;
 use App\Http\Resources\Api\Product\ProductResource;
 use App\Models\Product;
 use App\Services\ProductService;
-use App\Helper\ApiListHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
@@ -24,8 +23,7 @@ class ProductController extends Controller
 
     public function index(IndexProductRequest $request): JsonResponse
     {
-        $perPage = ApiListHelper::perPage($request)['per_page'];
-        $paginator = $this->products->paginate($request->validated(), $perPage);
+        $paginator = $this->products->paginate($request->validated());
 
         return $this->paginated(
             ProductResource::collection($paginator),
@@ -36,7 +34,6 @@ class ProductController extends Controller
     public function show(Product $product): JsonResponse
     {
         $product = $this->products->show($product);
-
         return $this->success(
             __('messages.products.shown'),
             new ProductResource($product)

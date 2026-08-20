@@ -10,7 +10,7 @@ interface CategoryRepositoryInterface
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginate(array $filters, int $perPage): LengthAwarePaginator;
+    public function paginate(array $filters): LengthAwarePaginator;
 
     /**
      * @param  array<string, mixed>  $data

@@ -36,7 +36,8 @@ class CategoryRepositoryTest extends TestCase
             'is_active' => true,
             'sort' => 'name',
             'sort_direction' => 'AsC',
-        ], 10);
+            'per_page' => 10,
+        ]);
 
         $names = collect($paginator->items())->pluck('name')->all();
 

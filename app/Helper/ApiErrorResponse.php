@@ -3,6 +3,10 @@
 namespace App\Helper;
 
 use App\Exceptions\ApiException;
+use App\Models\Category;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -15,6 +19,7 @@ use ParseError;
 use Symfony\Component\HttpFoundation\Exception\JsonException as SymfonyJsonException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class ApiErrorResponse
@@ -71,8 +76,13 @@ class ApiErrorResponse
             );
         }
 
-        if ($e instanceof ModelNotFoundException) {
-            return self::make(__('messages.errors.not_found'), Response::HTTP_NOT_FOUND, 'NOT_FOUND');
+        $modelNotFound = self::modelNotFoundException($e);
+        if ($modelNotFound !== null) {
+            return self::make(
+                self::messageForMissingModel($modelNotFound),
+                Response::HTTP_NOT_FOUND,
+                'NOT_FOUND'
+            );
         }
 
         if ($e instanceof HttpExceptionInterface) {
@@ -122,6 +132,35 @@ class ApiErrorResponse
 
         return str_contains($message, 'syntax error')
             || str_contains($message, 'could not decode request body');
+    }
+
+    private static function modelNotFoundException(Throwable $e): ?ModelNotFoundException
+    {
+        if ($e instanceof ModelNotFoundException) {
+            return $e;
+        }
+
+        if ($e instanceof NotFoundHttpException && $e->getPrevious() instanceof ModelNotFoundException) {
+            return $e->getPrevious();
+        }
+
+        return null;
+    }
+
+    private static function messageForMissingModel(ModelNotFoundException $e): string
+    {
+        $map = [
+            Product::class => 'messages.products.not_found',
+            Category::class => 'messages.categories.not_found',
+            Order::class => 'messages.orders.not_found',
+            User::class => 'messages.errors.user_not_found',
+        ];
+
+        $model = $e->getModel();
+
+        return isset($map[$model])
+            ? __($map[$model])
+            : __('messages.errors.not_found');
     }
 
     private static function defaultMessageForStatus(int $status): string

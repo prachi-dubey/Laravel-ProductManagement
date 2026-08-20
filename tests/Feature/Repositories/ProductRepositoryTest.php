@@ -58,7 +58,8 @@ class ProductRepositoryTest extends TestCase
             'is_active' => true,
             'sort' => 'price',
             'sort_direction' => 'DESC',
-        ], 10);
+            'per_page' => 10,
+        ]);
 
         $names = collect($paginator->items())->pluck('name')->all();
 

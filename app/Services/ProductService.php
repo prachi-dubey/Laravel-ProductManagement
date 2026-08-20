@@ -23,9 +23,9 @@ class ProductService
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginate(array $filters, int $perPage): LengthAwarePaginator
+    public function paginate(array $filters): LengthAwarePaginator
     {
-        return $this->products->paginate($filters, $perPage);
+        return $this->products->paginate($filters);
     }
 
     public function show(Product $product): Product

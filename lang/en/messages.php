@@ -20,6 +20,7 @@ return [
         'deleted' => 'Product deleted successfully.',
         'categories_synced' => 'Product categories synced successfully.',
         'in_use' => 'Cannot delete product that appears on existing orders.',
+        'not_found' => 'Product not found.',
     ],
 
     'categories' => [
@@ -29,6 +30,7 @@ return [
         'updated' => 'Category updated successfully.',
         'deleted' => 'Category deleted successfully.',
         'in_use' => 'Cannot delete category while products are still linked to it.',
+        'not_found' => 'Category not found.',
     ],
 
     'orders' => [
@@ -38,6 +40,7 @@ return [
         'invalid_address' => 'No shipping address found on your profile.',
         'product_unavailable' => 'One or more products are unavailable.',
         'insufficient_stock' => 'Insufficient stock for :name (available: :available).',
+        'not_found' => 'Order not found.',
     ],
 
     'errors' => [
@@ -45,6 +48,7 @@ return [
         'unauthenticated' => 'Unauthenticated.',
         'forbidden' => 'This action is unauthorized.',
         'not_found' => 'Resource not found.',
+        'user_not_found' => 'User not found.',
         'method_not_allowed' => 'The HTTP method is not allowed for this endpoint.',
         'syntax' => 'Something went wrong.',
         'server' => 'Server error.',

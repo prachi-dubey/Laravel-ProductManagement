@@ -13,7 +13,7 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginate(array $filters, int $perPage): LengthAwarePaginator
+    public function paginate(array $filters): LengthAwarePaginator
     {
         $builder = Product::with(['categories']);
 
@@ -50,6 +50,8 @@ class ProductRepository implements ProductRepositoryInterface
             $filters['sort_direction'] ?? '',
             ['id', 'name', 'price', 'stock', 'created_at', 'updated_at'],
         );
+
+        $perPage = ApiListHelper::perPage($filters['per_page'] ?? null);
 
         return $builder->paginate($perPage);
     }

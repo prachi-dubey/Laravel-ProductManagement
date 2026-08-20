@@ -13,10 +13,9 @@ class CategoryRepository implements CategoryRepositoryInterface
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginate(array $filters, int $perPage): LengthAwarePaginator
+    public function paginate(array $filters): LengthAwarePaginator
     {
         $builder = Category::withCount('products');
-
         if (! empty($filters['search'])) {
             $search = $filters['search'];
             $builder->where(function ($q) use ($search) {
@@ -35,6 +34,8 @@ class CategoryRepository implements CategoryRepositoryInterface
             $filters['sort_direction'] ?? '',
             ['id', 'name', 'created_at', 'updated_at'],
         );
+
+        $perPage = ApiListHelper::perPage($filters['per_page'] ?? null);
 
         return $builder->paginate($perPage);
     }
@@ -80,7 +81,6 @@ class CategoryRepository implements CategoryRepositoryInterface
         if ($withCount !== []) {
             $category->loadCount($withCount);
         }
-
         return $category;
     }
 }

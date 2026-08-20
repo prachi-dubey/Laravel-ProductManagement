@@ -3,7 +3,6 @@
 namespace App\Helper;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 class ApiListHelper
 {
@@ -29,21 +28,21 @@ class ApiListHelper
     }
 
     /**
-     * @return array{per_page: int}
+     * Normalize page size from filters / query value (not from Request).
      */
-    public static function perPage(Request $request, int $default = 10, int $max = 50): array
+    public static function perPage(int|string|null $perPage = null, int $default = 10, int $max = 50): int
     {
-        $perPage = (int) $request->input('per_page', $default);
+        $value = ($perPage === null || $perPage === '') ? $default : (int) $perPage;
 
-        if ($perPage < 1) {
-            $perPage = $default;
+        if ($value < 1) {
+            $value = $default;
         }
 
-        if ($perPage > $max) {
-            $perPage = $max;
+        if ($value > $max) {
+            $value = $max;
         }
 
-        return ['per_page' => $perPage];
+        return $value;
     }
 
     /**

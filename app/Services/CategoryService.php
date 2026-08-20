@@ -21,9 +21,9 @@ class CategoryService
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginate(array $filters, int $perPage): LengthAwarePaginator
+    public function paginate(array $filters): LengthAwarePaginator
     {
-        return $this->categories->paginate($filters, $perPage);
+        return $this->categories->paginate($filters);
     }
 
     /**

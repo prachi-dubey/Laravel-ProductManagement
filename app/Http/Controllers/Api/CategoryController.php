@@ -8,7 +8,6 @@ use App\Http\Requests\Api\Category\SaveCategoryRequest;
 use App\Http\Resources\Api\Category\CategoryResource;
 use App\Models\Category;
 use App\Services\CategoryService;
-use App\Helper\ApiListHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
@@ -24,8 +23,7 @@ class CategoryController extends Controller
 
     public function index(IndexCategoryRequest $request): JsonResponse
     {
-        $perPage = ApiListHelper::perPage($request)['per_page'];
-        $paginator = $this->categories->paginate($request->validated(), $perPage);
+        $paginator = $this->categories->paginate($request->validated());
 
         return $this->paginated(
             CategoryResource::collection($paginator),
