@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api\Product;
 
-use App\Http\Requests\Api\CategoryIdsRules;
+use App\Http\Traits\CategoryIdsRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;

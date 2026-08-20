@@ -41,7 +41,7 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 | **Email notifications** | Two custom Laravel notifications: `OrderPlacedNotification` (sent to the customer with order details) and `LowStockNotification` (sent to all admins when a product's stock drops below 10). Both use the `mail` channel |
 | **Repository pattern** | Interfaces + implementations for User, Product, Category, and Order repositories, bound in the service container |
 | **Service layer** | `AuthService`, `ProductService`, `CategoryService`, `OrderService` encapsulate business logic away from controllers |
-| **Form request validation** | 8 custom request classes (`RegisterRequest`, `LoginRequest`, `UpdateProfileRequest`, `SaveCategoryRequest`, `SaveProductRequest`, `StoreOrderRequest`, etc.) with shared rule traits (`IndexQueryRules`, `CategoryIdsRules`) |
+| **Form request validation** | 8 custom request classes (`RegisterRequest`, `LoginRequest`, `UpdateProfileRequest`, `SaveCategoryRequest`, `SaveProductRequest`, `StoreOrderRequest`, etc.) with shared rule traits in `Http/Traits` (`IndexQueryRules`, `CategoryIdsRules`) |
 | **API resources** | `AuthResource`, `UserResource`, `ProfileResource`, `ProductResource`, `CategoryResource`, `OrderResource`, `OrderItemResource` for consistent response transformation |
 | **Standardized API responses** | Base controller `success()` and `paginated()` helpers, `ApiErrorResponse` helper, and a single `ApiException` class — every response follows `{ "success": true/false, "message": "...", "data": {} }` |
 | **Pagination & sorting helper** | `ApiListHelper` handles `sort`, `sort_direction`, `per_page`, and paginated payload formatting |
@@ -177,6 +177,7 @@ app/
 ├── Http/Middleware/           # EnsureUserIsAdmin
 ├── Http/Requests/Api/        # Form requests per domain
 ├── Http/Resources/Api/       # API resources per domain
+├── Http/Traits/              # Shared form-request rule traits
 ├── Interfaces/               # Repository interfaces
 ├── Jobs/                     # SendOrderConfirmationJob, CheckLowStockJob
 ├── Listeners/                # SendOrderConfirmation, QueueLowStockCheck

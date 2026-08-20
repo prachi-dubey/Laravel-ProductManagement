@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api\Category;
 
-use App\Http\Requests\Api\IndexQueryRules;
+use App\Http\Traits\IndexQueryRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IndexCategoryRequest extends FormRequest
