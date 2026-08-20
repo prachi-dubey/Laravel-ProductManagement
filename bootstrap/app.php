@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 
 /*
 | Positional args (not named) so PHP 7.4 IDE parsers don't choke.
-| Runtime still uses XAMPP PHP 8.2 via ./bin/artisan.
 |
 | withRouting($using, $web, $api, $commands, $channels, $pages, $health)
 */

@@ -10,7 +10,6 @@ use App\Repositories\CategoryRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 use App\Repositories\UserRepository;
-use Illuminate\Foundation\Console\ServeCommand;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,8 +24,5 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        if (! in_array('PHPRC', ServeCommand::$passthroughVariables, true)) {
-            ServeCommand::$passthroughVariables[] = 'PHPRC';
-        }
     }
 }
