@@ -26,7 +26,6 @@ class CategoryController extends Controller
     {
         $perPage = ApiListHelper::perPage($request)['per_page'];
         $paginator = $this->categories->paginate($request->validated(), $perPage);
-        $paginator->appends($request->input());
 
         return $this->paginated(
             CategoryResource::collection($paginator),

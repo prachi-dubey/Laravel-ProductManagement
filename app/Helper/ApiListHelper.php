@@ -47,7 +47,7 @@ class ApiListHelper
     }
 
     /**
-     * Standard list envelope with pagination meta.
+     * Standard list envelope with pagination details.
      *
      * @param  mixed  $resourceCollection
      * @return array<string, mixed>
@@ -60,17 +60,10 @@ class ApiListHelper
             'success' => true,
             'message' => $message,
             'data' => $resourceCollection->collection,
-            'meta' => [
+            'pagination' => [
                 'current_page' => $paginator->currentPage(),
                 'per_page' => $paginator->perPage(),
                 'total' => $paginator->total(),
-                'last_page' => $paginator->lastPage(),
-            ],
-            'links' => [
-                'first' => $paginator->url(1),
-                'last' => $paginator->url($paginator->lastPage()),
-                'prev' => $paginator->previousPageUrl(),
-                'next' => $paginator->nextPageUrl(),
             ],
         ];
     }

@@ -26,7 +26,6 @@ class ProductController extends Controller
     {
         $perPage = ApiListHelper::perPage($request)['per_page'];
         $paginator = $this->products->paginate($request->validated(), $perPage);
-        $paginator->appends($request->input());
 
         return $this->paginated(
             ProductResource::collection($paginator),

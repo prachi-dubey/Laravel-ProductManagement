@@ -122,7 +122,7 @@ Every endpoint returns a consistent JSON envelope:
 }
 ```
 
-List endpoints include pagination metadata (current page, total, per page, etc.).
+List endpoints include a `pagination` object (`current_page`, `per_page`, `total`).
 
 ---
 

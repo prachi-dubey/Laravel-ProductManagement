@@ -28,7 +28,6 @@ class OrderController extends Controller
 
         $perPage = ApiListHelper::perPage($request)['per_page'];
         $paginator = $this->orders->paginateForViewer($request->user(), $perPage);
-        $paginator->appends($request->input());
 
         return $this->paginated(
             OrderResource::collection($paginator),
