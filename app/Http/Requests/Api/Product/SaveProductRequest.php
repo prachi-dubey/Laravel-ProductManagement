@@ -45,14 +45,6 @@ class SaveProductRequest extends FormRequest
                         ? Rule::unique('products', 'slug')->ignore($productId)
                         : Rule::unique('products', 'slug'),
                 ],
-                'sku' => [
-                    $updating ? 'sometimes' : 'required',
-                    'string',
-                    'max:60',
-                    $updating
-                        ? Rule::unique('products', 'sku')->ignore($productId)
-                        : Rule::unique('products', 'sku'),
-                ],
                 'description' => [$updating ? 'sometimes' : 'nullable', 'nullable', 'string'],
                 'price' => [$updating ? 'sometimes' : 'required', 'numeric', 'min:0'],
                 'stock' => [$updating ? 'sometimes' : 'required', 'integer', 'min:0'],

@@ -34,11 +34,7 @@ class CategoryService
         $data['slug'] = $data['slug'] ?? Str::slug($data['name']);
         $data['is_active'] = $data['is_active'] ?? true;
 
-        return $this->categories->loadRelations(
-            $this->categories->create($data),
-            [],
-            ['products']
-        );
+        return $this->categories->create($data);
     }
 
     public function show(Category $category): Category

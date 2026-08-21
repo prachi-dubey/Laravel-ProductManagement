@@ -45,7 +45,7 @@ class CheckLowStockJob implements ShouldQueue
 
             Log::warning('Low stock detected', [
                 'product_id' => $product->id,
-                'sku' => $product->sku,
+                'name' => $product->name,
                 'stock' => $product->stock,
                 'threshold' => self::THRESHOLD,
                 'order_id' => $order->id,

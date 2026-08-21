@@ -21,7 +21,7 @@ class ProductRepository implements ProductRepositoryInterface
             $search = $filters['search'];
             $builder->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%");
+                    ->orWhere('slug', 'like', "%{$search}%");
             });
         }
 

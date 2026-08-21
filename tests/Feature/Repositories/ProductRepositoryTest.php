@@ -19,7 +19,6 @@ class ProductRepositoryTest extends TestCase
 
         $low = Product::factory()->create([
             'name' => 'Budget Mouse',
-            'sku' => 'SKU-LOW-001',
             'price' => 150,
             'is_active' => true,
         ]);
@@ -27,7 +26,6 @@ class ProductRepositoryTest extends TestCase
 
         $high = Product::factory()->create([
             'name' => 'Pro Mouse',
-            'sku' => 'SKU-HIGH-001',
             'price' => 900,
             'is_active' => true,
         ]);
@@ -35,7 +33,6 @@ class ProductRepositoryTest extends TestCase
 
         $other = Product::factory()->create([
             'name' => 'Keyboard',
-            'sku' => 'SKU-OTHER-001',
             'price' => 500,
             'is_active' => true,
         ]);
@@ -43,7 +40,6 @@ class ProductRepositoryTest extends TestCase
 
         $inactive = Product::factory()->create([
             'name' => 'Inactive Mouse',
-            'sku' => 'SKU-INACTIVE-001',
             'price' => 700,
             'is_active' => false,
         ]);

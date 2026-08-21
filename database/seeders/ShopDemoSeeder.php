@@ -78,22 +78,21 @@ class ShopDemoSeeder extends Seeder
         $books = $categories->firstWhere('name', 'Books');
 
         $catalog = [
-            ['Wireless Headphones', 'WH-100', 2499.00, 40, [$electronics->id]],
-            ['USB-C Charger 65W', 'CHG-65', 1299.00, 80, [$electronics->id]],
-            ['Ceramic Mug Set', 'MUG-4', 699.00, 55, [$homeKitchen->id]],
-            ['Steel Water Bottle', 'BTL-1L', 499.00, 120, [$homeKitchen->id, $electronics->id]],
-            ['Laravel From Scratch', 'BK-LFS', 899.00, 30, [$books->id]],
-            ['Clean Architecture Notes', 'BK-CAN', 799.00, 25, [$books->id, $electronics->id]],
+            ['Wireless Headphones', 2499.00, 40, [$electronics->id]],
+            ['USB-C Charger 65W', 1299.00, 80, [$electronics->id]],
+            ['Ceramic Mug Set', 699.00, 55, [$homeKitchen->id]],
+            ['Steel Water Bottle', 499.00, 120, [$homeKitchen->id, $electronics->id]],
+            ['Laravel From Scratch', 899.00, 30, [$books->id]],
+            ['Clean Architecture Notes', 799.00, 25, [$books->id, $electronics->id]],
         ];
 
         $products = collect($catalog)->map(function (array $row) {
-            [$name, $sku, $price, $stock, $categoryIds] = $row;
+            [$name, $price, $stock, $categoryIds] = $row;
 
             $product = Product::query()->updateOrCreate(
-                ['sku' => $sku],
+                ['slug' => Str::slug($name)],
                 [
                     'name' => $name,
-                    'slug' => Str::slug($name),
                     'description' => "Demo product: {$name}",
                     'price' => $price,
                     'stock' => $stock,

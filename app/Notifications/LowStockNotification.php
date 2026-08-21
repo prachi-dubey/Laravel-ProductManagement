@@ -40,7 +40,6 @@ class LowStockNotification extends Notification
             ->greeting('Hi '.$notifiable->name.',')
             ->line('A product is at or below the stock threshold.')
             ->line('Product: '.$product->name)
-            ->line('SKU: '.$product->sku)
             ->line('Stock left: '.$product->stock)
             ->line('Please restock this item.');
     }
