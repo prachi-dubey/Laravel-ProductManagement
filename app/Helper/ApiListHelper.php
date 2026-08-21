@@ -62,7 +62,7 @@ class ApiListHelper
             'pagination' => [
                 'current_page' => $paginator->currentPage(),
                 'per_page' => $paginator->perPage(),
-                'total' => $paginator->total(),
+                'has_more' => $paginator->hasMorePages(),
             ],
         ];
     }
