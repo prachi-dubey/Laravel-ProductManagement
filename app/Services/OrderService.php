@@ -31,9 +31,12 @@ class OrderService
         $this->products = $products;
     }
 
-    public function paginateForViewer(User $user, int $perPage): LengthAwarePaginator
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function paginateForViewer(User $user, array $filters): LengthAwarePaginator
     {
-        return $this->orders->paginateForViewer($user, $perPage);
+        return $this->orders->paginateForViewer($user, $filters);
     }
 
     /**

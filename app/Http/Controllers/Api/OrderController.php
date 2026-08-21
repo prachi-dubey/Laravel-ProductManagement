@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Order\IndexOrderRequest;
 use App\Http\Requests\Api\Order\StoreOrderRequest;
 use App\Http\Resources\Api\Order\OrderResource;
 use App\Models\Order;
 use App\Services\OrderService;
-use App\Helper\ApiListHelper;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class OrderController extends Controller
@@ -22,12 +21,14 @@ class OrderController extends Controller
         $this->orders = $orders;
     }
 
-    public function index(Request $request): JsonResponse
+    public function index(IndexOrderRequest $request): JsonResponse
     {
         $this->authorize('viewAny', Order::class);
 
-        $perPage = ApiListHelper::perPage($request->input('per_page'));
-        $paginator = $this->orders->paginateForViewer($request->user(), $perPage);
+        $paginator = $this->orders->paginateForViewer(
+            $request->user(),
+            $request->validated()
+        );
 
         return $this->paginated(
             OrderResource::collection($paginator),

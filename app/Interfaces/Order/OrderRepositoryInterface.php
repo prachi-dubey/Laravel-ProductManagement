@@ -23,7 +23,10 @@ interface OrderRepositoryInterface
 
     public function findShippingProfile(User $user): ?Profile;
 
-    public function paginateForViewer(User $user, int $perPage): LengthAwarePaginator;
+    /**
+     * @param  array<string, mixed>  $filters
+     */
+    public function paginateForViewer(User $user, array $filters): LengthAwarePaginator;
 
     /**
      * @param  list<string>  $relations

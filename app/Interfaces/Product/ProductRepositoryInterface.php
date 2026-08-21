@@ -12,8 +12,6 @@ interface ProductRepositoryInterface
      */
     public function paginate(array $filters): LengthAwarePaginator;
 
-    public function findById(int $id): ?Product;
-
     /**
      * @param  array<string, mixed>  $data
      */

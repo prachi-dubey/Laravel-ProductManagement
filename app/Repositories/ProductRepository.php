@@ -56,11 +56,6 @@ class ProductRepository implements ProductRepositoryInterface
         return $builder->paginate($perPage);
     }
 
-    public function findById(int $id): ?Product
-    {
-        return Product::with(['categories'])->find($id);
-    }
-
     /**
      * @param  array<string, mixed>  $data
      */
