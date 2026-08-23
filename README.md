@@ -4,13 +4,30 @@ A RESTful e-commerce API built from scratch for managing products, categories, o
 
 ## About the Project
 
-Shop API is a backend-only e-commerce application that exposes a JSON API for:
+Shop API is a backend-only e-commerce application that exposes a JSON API for a small online shop.
 
-- **User registration and authentication** with token-based access (Sanctum)
-- **Product and category management** with a many-to-many relationship (a product can belong to multiple categories)
-- **Order placement** with stock validation, automatic inventory decrement, and order number generation
-- **Queued email notifications** — order confirmations (to customers) and low-stock alerts (to admins) via email
-- **Role-based access** — Admin and Customer roles with policy-based authorization
+**Authentication & roles**
+
+- Token-based auth with Laravel Sanctum
+- Two roles: **Admin** and **Customer**
+- Supported auth flows: **register**, **login**, **me**, and **logout**
+- Users can **update their profile** (shipping address, phone, bio)
+
+**Catalog**
+
+- **Admin** can create, update, and delete **categories**; customers can list and view categories
+- **Admin** can create, update, and delete **products**, and **sync** product–category links; customers can list and view products
+- Products and categories have a many-to-many relationship (one product can belong to multiple categories)
+
+**Orders**
+
+- Both **admin** and **customer** can place orders, list orders, and view a single order
+- On **list** and **show**: an admin sees **all customers’ orders**; a customer sees **only their own** orders
+
+**Notifications**
+
+- When an order is placed, the **customer** receives an **order confirmation** email
+- If stock for an ordered product falls **low**, **admins** receive a **low-stock** alert email
 
 The entire stack runs in Docker, so there is nothing to install locally beyond Docker itself.
 
@@ -26,74 +43,73 @@ The entire stack runs in Docker, so there is nothing to install locally beyond D
 | Containerization | Docker & Docker Compose | — |
 | Web Server | Nginx | — |
 
-## What This App Does (vs. What Laravel Provides)
-
-### Built by us
-
-| Feature | What we built |
-|---------|--------------|
-| **Authentication** | Custom `AuthController` + `AuthService` — register (creates customer role + profile), login (manual credential check, returns Sanctum token), logout (revokes token), me (current user info), update profile (shipping address, phone, bio) |
-| **Role-Based Access Control** | Two roles (`admin`, `customer`). Custom `EnsureUserIsAdmin` middleware restricts admin routes. Policies (`OrderPolicy`, `ProductPolicy`, `CategoryPolicy`) control per-resource authorization |
-| **Categories (CRUD)** | `CategoryController` + `CategoryService` + `CategoryRepository` — create, read, update, delete categories. Public listing with pagination, sorting, and search |
-| **Products (CRUD)** | `ProductController` + `ProductService` + `ProductRepository` — full CRUD with SKU, price, stock tracking, and many-to-many category sync (`PUT /products/{id}/categories`) |
-| **Orders** | `OrderController` + `OrderService` + `OrderRepository` — customers place orders with line items; the service validates stock, decrements inventory inside a DB transaction, generates an order number, and fires an `OrderPlaced` event |
-| **Order event pipeline** | `OrderPlaced` event → two listeners: `SendOrderConfirmation` (dispatches `SendOrderConfirmationJob`) and `QueueLowStockCheck` (dispatches `CheckLowStockJob`). Both jobs are queued |
-| **Email notifications** | Two custom Laravel notifications: `OrderPlacedNotification` (sent to the customer with order details) and `LowStockNotification` (sent to all admins when a product's stock drops below 10). Both use the `mail` channel |
-| **Repository pattern** | Interfaces + implementations for User, Product, Category, and Order repositories, bound in the service container |
-| **Service layer** | `AuthService`, `ProductService`, `CategoryService`, `OrderService` encapsulate business logic away from controllers |
-| **Form request validation** | 8 custom request classes (`RegisterRequest`, `LoginRequest`, `UpdateProfileRequest`, `SaveCategoryRequest`, `SaveProductRequest`, `StoreOrderRequest`, etc.) with shared rule traits in `Http/Traits` (`IndexQueryRules`, `CategoryIdsRules`) |
-| **API resources** | `AuthResource`, `UserResource`, `ProfileResource`, `ProductResource`, `CategoryResource`, `OrderResource`, `OrderItemResource` for consistent response transformation |
-| **Standardized API responses** | Base controller `success()` and `paginated()` helpers, `ApiErrorResponse` helper, and a single `ApiException` class — every response follows `{ "success": true/false, "message": "...", "data": {} }` |
-| **Pagination & sorting helper** | `ApiListHelper` handles `sort`, `sort_direction`, `per_page`, and paginated payload formatting |
-| **Localized messages** | `lang/en/messages.php` — all user-facing API messages in one place |
-| **Database seeder** | `ShopDemoSeeder` creates demo admin + customer users with profiles, 3 categories, 6 products, and a sample order (idempotent with `updateOrCreate`) |
-| **Docker setup** | Custom `Dockerfile` (PHP-FPM), Nginx config, entrypoint script, and `docker-compose.yml` with 4 services. `start.sh` handles first-run setup |
-
-### Provided by Laravel (we use, but did not build)
-
-| Feature | What Laravel provides |
-|---------|----------------------|
-| Sanctum token engine | Token creation, hashing, `auth:sanctum` middleware guard |
-| Notification system | `Notifiable` trait, `mail` channel |
-| Queue system | Job dispatching, `database` queue driver, `queue:work` command |
-| Event system | `Event` + `Listener` wiring and dispatch |
-| Eloquent ORM | Models, relationships, migrations, transactions |
-| Form request validation | Base `FormRequest` class and validation rules |
-| API resource classes | Base `JsonResource` for response shaping |
-| Artisan CLI | `migrate`, `seed`, `key:generate`, `storage:link`, etc. |
-
 ---
 
 ## Features & Functionality
 
-### 1. Authentication & Authorization
+### 1. Authentication & roles
 
-- **Register** — creates a new customer account with a profile, returns an API token
-- **Login** — validates credentials, returns a bearer token for subsequent requests
-- **Logout** — revokes the current token
-- **Update profile** — update shipping address, phone, and bio via `PUT /api/profile` (required before placing an order)
-- **Role check** — admin routes are protected by custom middleware; resource-level access is controlled by policies
+Authentication is implemented with Sanctum personal access tokens. There are **two roles**: `admin` and `customer`.
 
-### 2. Category Management
+| Action | Who | What it does |
+|--------|-----|--------------|
+| **Register** | Public | Creates a new account as a **customer** (role cannot be chosen via the API), creates an empty profile, returns a bearer token |
+| **Login** | Public | Validates email/password and returns a bearer token |
+| **Me** | Authenticated | Returns the current user (and related profile data) |
+| **Logout** | Authenticated | Revokes the current access token |
+| **Update profile** | Authenticated | Updates phone, bio, and shipping address (`line1`, `city`, `postal_code`, `country`, etc.) via `PUT /api/profile` |
 
-- Public: browse and view categories with pagination and sorting
-- Admin: create, update, and delete categories
+Admin-only routes are protected by `EnsureUserIsAdmin` middleware. Resource access (especially orders) is enforced with policies.
 
-### 3. Product Management
+A shipping address on the profile is required before an order can be placed (the address is copied onto the order as a shipping snapshot at checkout).
 
-- Public: browse and view products with pagination and sorting
-- Admin: create, update, delete products; sync product-category assignments
-- Products track name, description, SKU, price, and stock quantity
-- Many-to-many relationship with categories via `category_product` pivot table
+### 2. Category management
 
-### 4. Order Processing
+| Action | Admin | Customer |
+|--------|-------|----------|
+| **List** categories | Yes | Yes |
+| **Show** a category | Yes | Yes |
+| **Create** category | Yes | No |
+| **Update** category | Yes | No |
+| **Delete** category | Yes | No |
 
-- Customers must first update their profile with a shipping address (`PUT /api/profile`) before placing an order
-- Customers submit an order with a list of products and quantities
-- The service validates that sufficient stock exists for every item
-- Stock is decremented and the order is created inside a database transaction
-- A unique order number is generated automatically
-- An `OrderPlaced` event is fired, triggering the notification pipeline
+- List/show support pagination, sorting, and search
+- Delete is blocked if products are still linked to the category
+
+### 3. Product management
+
+| Action | Admin | Customer |
+|--------|-------|----------|
+| **List** products | Yes | Yes |
+| **Show** a product | Yes | Yes |
+| **Create** product | Yes | No |
+| **Update** product | Yes | No |
+| **Delete** product | Yes | No |
+| **Sync** product categories | Yes | No |
+
+- Products store name, description, price, stock, active flag, and optional image
+- **Sync** (`PUT /api/products/{id}/categories`) replaces the product’s category links
+- Many-to-many relationship via the `category_product` pivot table
+- Delete is blocked if the product appears on existing orders
+
+### 4. Order processing
+
+Both **admin** and **customer** can place an order, list orders, and show an order. Visibility differs by role:
+
+| Action | Admin | Customer |
+|--------|-------|----------|
+| **Place** order | Yes | Yes |
+| **List** orders | **All** customers’ orders | **Own** orders only |
+| **Show** order | Any order | **Own** order only |
+
+When an order is placed:
+
+1. Profile must have a complete shipping address
+2. Line items (product + quantity) are validated
+3. Stock is checked for every item; insufficient stock fails the request
+4. Inside a database transaction: order is created, items are saved, stock is decremented, shipping fields are copied from the profile snapshot
+5. A unique order number is generated (e.g. `ORD-YYYYMMDD-XXXXXX`)
+6. An `OrderPlaced` event starts the notification pipeline
 
 **Order status workflow:**
 
@@ -103,14 +119,16 @@ pending → paid → shipped
 cancelled cancelled
 ```
 
-### 5. Queued Notifications
+### 5. Email notifications (queued)
 
-When an order is placed, two queued jobs run:
+After a successful order placement, two queued jobs run:
 
-1. **Order confirmation** — sends the customer an email with order details
-2. **Low-stock alert** — if any ordered product's stock drops below 10, all admin users are notified via email
+1. **Order confirmation** — email to the **customer** who placed the order (order details)
+2. **Low-stock check** — if any ordered product’s stock drops **below 10**, email to **all admin** users
 
-### 6. Standardized API Responses
+Jobs use the database queue (`QUEUE_CONNECTION=database`) and are processed by `queue:work` in Docker.
+
+### 6. Standardized API responses
 
 Every endpoint returns a consistent JSON envelope:
 
@@ -146,9 +164,9 @@ List endpoints include a `pagination` object (`current_page`, `per_page`, `total
 | PUT | `/api/products/{id}` | Yes | Admin | Update product |
 | DELETE | `/api/products/{id}` | Yes | Admin | Delete product |
 | PUT | `/api/products/{id}/categories` | Yes | Admin | Sync categories |
-| GET | `/api/orders` | Yes | Any | List orders |
-| GET | `/api/orders/{id}` | Yes | Any | View order |
-| POST | `/api/orders` | Yes | Customer | Place order |
+| GET | `/api/orders` | Yes | Any | List orders (admin: all; customer: own) |
+| GET | `/api/orders/{id}` | Yes | Any | View order (admin: any; customer: own) |
+| POST | `/api/orders` | Yes | Any | Place order (admin or customer) |
 
 ---
 
