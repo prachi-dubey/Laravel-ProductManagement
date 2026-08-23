@@ -53,7 +53,7 @@ class OrderController extends Controller
     {
         $this->authorize('view', $order);
 
-        $order->load(['items']);
+        $order = $this->orders->show($order);
 
         return $this->success(
             __('messages.orders.shown'),

@@ -39,6 +39,11 @@ class OrderService
         return $this->orders->paginateForViewer($user, $filters);
     }
 
+    public function show(Order $order): Order
+    {
+        return $this->orders->loadRelations($order, ['items']);
+    }
+
     /**
      * Place an order for the given user.
      *
