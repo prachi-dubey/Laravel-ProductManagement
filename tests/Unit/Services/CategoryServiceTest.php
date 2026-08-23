@@ -32,12 +32,7 @@ class CategoryServiceTest extends TestCase
                     && $payload['is_active'] === true;
             }))
             ->andReturn($category);
-
-        $repository
-            ->shouldReceive('loadRelations')
-            ->once()
-            ->with($category, [], ['products'])
-            ->andReturn($category);
+        $repository->shouldNotReceive('loadRelations');
 
         $service = new CategoryService($repository);
 
