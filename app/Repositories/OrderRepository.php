@@ -46,7 +46,7 @@ class OrderRepository implements OrderRepositoryInterface
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginateForViewer(User $user, array $filters): LengthAwarePaginator
+    public function index(User $user, array $filters): LengthAwarePaginator
     {
         $builder = Order::with(['items']);
 

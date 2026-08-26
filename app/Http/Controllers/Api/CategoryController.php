@@ -23,7 +23,7 @@ class CategoryController extends Controller
 
     public function index(IndexCategoryRequest $request): JsonResponse
     {
-        $paginator = $this->categories->paginate($request->validated());
+        $paginator = $this->categories->index($request->validated());
 
         return $this->paginated(
             CategoryResource::collection($paginator),

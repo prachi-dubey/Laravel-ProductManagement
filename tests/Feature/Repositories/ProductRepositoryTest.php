@@ -12,7 +12,7 @@ class ProductRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_paginate_filters_by_category_price_and_sorts_descending(): void
+    public function test_index_filters_by_category_price_and_sorts_descending(): void
     {
         $gaming = Category::factory()->create(['name' => 'Gaming']);
         $office = Category::factory()->create(['name' => 'Office']);
@@ -47,7 +47,7 @@ class ProductRepositoryTest extends TestCase
 
         $repository = new ProductRepository();
 
-        $paginator = $repository->paginate([
+        $paginator = $repository->index([
             'category_id' => $gaming->id,
             'min_price' => 100,
             'max_price' => 1000,

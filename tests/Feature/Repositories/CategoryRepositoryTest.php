@@ -11,7 +11,7 @@ class CategoryRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_paginate_applies_search_active_filter_and_case_insensitive_sort_direction(): void
+    public function test_index_applies_search_active_filter_and_case_insensitive_sort_direction(): void
     {
         Category::factory()->create([
             'name' => 'Electronics',
@@ -31,7 +31,7 @@ class CategoryRepositoryTest extends TestCase
 
         $repository = new CategoryRepository();
 
-        $paginator = $repository->paginate([
+        $paginator = $repository->index([
             'search' => 'elect',
             'is_active' => true,
             'sort' => 'name',

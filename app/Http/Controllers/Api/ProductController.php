@@ -23,7 +23,7 @@ class ProductController extends Controller
 
     public function index(IndexProductRequest $request): JsonResponse
     {
-        $paginator = $this->products->paginate($request->validated());
+        $paginator = $this->products->index($request->validated());
 
         return $this->paginated(
             ProductResource::collection($paginator),

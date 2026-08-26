@@ -25,7 +25,7 @@ class OrderController extends Controller
     {
         $this->authorize('viewAny', Order::class);
 
-        $paginator = $this->orders->paginateForViewer(
+        $paginator = $this->orders->index(
             $request->user(),
             $request->validated()
         );

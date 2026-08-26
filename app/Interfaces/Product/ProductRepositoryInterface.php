@@ -10,7 +10,7 @@ interface ProductRepositoryInterface
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginate(array $filters): LengthAwarePaginator;
+    public function index(array $filters): LengthAwarePaginator;
 
     /**
      * @param  array<string, mixed>  $data

@@ -34,9 +34,9 @@ class OrderService
     /**
      * @param  array<string, mixed>  $filters
      */
-    public function paginateForViewer(User $user, array $filters): LengthAwarePaginator
+    public function index(User $user, array $filters): LengthAwarePaginator
     {
-        return $this->orders->paginateForViewer($user, $filters);
+        return $this->orders->index($user, $filters);
     }
 
     public function show(Order $order): Order
