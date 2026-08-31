@@ -39,7 +39,7 @@ class ProductService
     public function create(array $data): Product
     {
         $image = $data['image'] ?? null;
-        unset($data['image'], $data['remove_image']);
+        unset($data['image']);
 
         $categoryIds = $data['category_ids'];
         unset($data['category_ids']);
