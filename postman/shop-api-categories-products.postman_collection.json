@@ -513,7 +513,7 @@
         {
           "name": "Update product (admin)",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
               {
                 "key": "Accept",
@@ -527,6 +527,12 @@
             "body": {
               "mode": "formdata",
               "formdata": [
+                {
+                  "key": "_method",
+                  "value": "PUT",
+                  "type": "text",
+                  "description": "Required for form-data updates. Laravel treats this as PUT (PHP parses multipart on POST only)."
+                },
                 {
                   "key": "name",
                   "value": "Demo Mouse Updated",
@@ -594,7 +600,7 @@
                 "{{product_id}}"
               ]
             },
-            "description": "Admin + Bearer token. Method: **PUT** `/api/products/{product_id}`.\nUse form-data when uploading an image. Send only fields you want to change.\n\n**Path**\n\n| Param | Type | Example |\n|---|---|---|\n| `product_id` | integer | `1` |\n\n**Body (all optional on update)**\n\n| Param | Type | Rules | Example |\n|---|---|---|---|\n| `name` | string | max 160 | `Demo Mouse Updated` |\n| `slug` | string | max 180, unique | `demo-mouse-updated` |\n| `description` | string | | `Updated text` |\n| `price` | number \u2265 0 | | `899` |\n| `stock` | integer \u2265 0 | | `20` |\n| `is_active` | boolean | | `1` |\n| `category_ids` | array of integers | if sent, min 1 existing ids | `category_ids[0]=1` |\n| `image` | file | jpg/jpeg/png/webp, max 2MB | pick a file |\n| `remove_image` | boolean | `1` clears image | `0` |"
+            "description": "Admin + Bearer token. Use **POST** + `_method=PUT` with form-data (required when uploading an image). Route stays `PUT /api/products/{product_id}` on the server.\n\nFor text-only updates without files, you can use real **PUT** with raw JSON instead.\n\n**Path**\n\n| Param | Type | Example |\n|---|---|---|\n| `product_id` | integer | `1` |\n\n**Body (form-data — send only fields you want to change)**\n\n| Param | Type | Rules | Example |\n|---|---|---|---|\n| `_method` | string | **required** with form-data | `PUT` |\n| `name` | string | max 160 | `Demo Mouse Updated` |\n| `slug` | string | max 180, unique | `demo-mouse-updated` |\n| `description` | string | | `Updated text` |\n| `price` | number \u2265 0 | | `899` |\n| `stock` | integer \u2265 0 | | `20` |\n| `is_active` | boolean | | `1` |\n| `category_ids` | array of integers | if sent, min 1 existing ids | `category_ids[0]=1` |\n| `image` | file | jpg/jpeg/png/webp, max 2MB | pick a file |\n| `remove_image` | boolean | `1` clears image | `0` |"
           }
         },
         {
