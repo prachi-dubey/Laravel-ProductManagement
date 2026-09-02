@@ -28,7 +28,7 @@ class SaveCategoryRequest extends FormRequest
         return [
             'name' => [$updating ? 'sometimes' : 'required', 'string', 'max:120'],
             'slug' => [
-                $updating ? 'sometimes' : 'nullable',
+                'sometimes',
                 'nullable',
                 'string',
                 'max:140',
@@ -36,7 +36,7 @@ class SaveCategoryRequest extends FormRequest
                     ? Rule::unique('categories', 'slug')->ignore($categoryId)
                     : Rule::unique('categories', 'slug'),
             ],
-            'description' => [$updating ? 'sometimes' : 'nullable', 'nullable', 'string'],
+            'description' => ['sometimes', 'nullable', 'string'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
